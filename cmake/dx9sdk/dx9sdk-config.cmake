@@ -64,7 +64,7 @@ target_link_libraries(dx9sdk INTERFACE
   "${DX9_LIBRARY_DIR}/d3dx9.lib"
   "${DX9_LIBRARY_DIR}/dinput8.lib"
   "${DX9_LIBRARY_DIR}/dsound.lib"
-  "${DX9_LIBRARY_DIR}/dxerr.lib"
+  "${DX9_LIBRARY_DIR}/DxErr.lib"
   "${DX9_LIBRARY_DIR}/dxguid.lib"
 )
 
