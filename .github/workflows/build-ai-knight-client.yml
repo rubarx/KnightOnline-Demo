@@ -1,4 +1,4 @@
-# AI Knight Online - Client Build Workflow
+# AI Knight Online - Client Build & Package Workflow
 # Compiles the Knight Online client and creates downloadable artifacts
 
 name: "AI Knight Online - Build Client"
@@ -6,8 +6,8 @@ name: "AI Knight Online - Build Client"
 on:
   push:
     branches: [master, main]
-  pull_request:
-    branches: [master, main]
+    paths:
+      - '.github/workflows/build-ai-knight-client.yml'
   workflow_dispatch:
     inputs:
       server_ip:
@@ -23,10 +23,6 @@ concurrency:
   group: "ai-knight-${{ github.ref || github.run_id }}"
   cancel-in-progress: true
 
-env:
-  BUILD_CONFIGURATION: Release
-  BUILD_PLATFORM: x64
-
 jobs:
   build:
     runs-on: windows-latest
@@ -36,20 +32,34 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        submodules: 'recursive'
+        submodules: 'false'
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@v2
+    - name: Setup CMake & Ninja
+      uses: lukka/get-cmake@latest
 
-    - name: Restore NuGet packages
-      run: nuget restore Client.slnx
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+        cmake -S . `
+          -B build `
+          -G "Ninja" `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DOPENKO_BUILD_CLIENT=ON `
+          -DOPENKO_BUILD_CLIENT_TOOLS=ON `
+          -DOPENKO_BUILD_SERVERS=OFF `
+          -DOPENKO_BUILD_TOOLS=OFF `
+          -DOPENKO_BUILD_TESTS=OFF `
+          -DOPENKO_FETCH_CLIENT_ASSETS=TRUE
 
     - name: Build Client
+      shell: pwsh
       run: |
-        msbuild /m /p:Configuration="${{env.BUILD_CONFIGURATION}}" /p:Platform="${{env.BUILD_PLATFORM}}" Client.slnx
+        cmake --build build --config Release --parallel
 
     - name: Prepare Distribution
       shell: pwsh
@@ -57,18 +67,20 @@ jobs:
         $distDir = "AI_Knight_Online_Client"
         New-Item -ItemType Directory -Force -Path $distDir
 
-        # Find and copy built executables
-        $binPaths = @(
-          "src/Client/N3Base/bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}",
-          "src/Client/WarFare/bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}",
-          "bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}"
-        )
+        # Copy all built binaries
+        if (Test-Path "build/bin") {
+          Copy-Item "build/bin/*" -Destination $distDir -Recurse -Force
+          Write-Host "Copied from build/bin"
+        }
+        if (Test-Path "build/bin/Release") {
+          Copy-Item "build/bin/Release/*" -Destination $distDir -Recurse -Force
+          Write-Host "Copied from build/bin/Release"
+        }
 
-        foreach ($path in $binPaths) {
-          if (Test-Path $path) {
-            Write-Host "Copying from: $path"
-            Copy-Item "$path/*" -Destination $distDir -Recurse -Force -ErrorAction SilentlyContinue
-          }
+        # Copy client data if exists
+        if (Test-Path "build/ClientData") {
+          Copy-Item "build/ClientData/*" -Destination "$distDir/Data" -Recurse -Force
+          Write-Host "Copied ClientData"
         }
 
         # Create server configuration
@@ -76,74 +88,59 @@ jobs:
         $serverPort = "${{ github.event.inputs.server_port || '15000' }}"
 
         @"
-        [Server]
-        IP=$serverIp
-        Port=$serverPort
+[Server]
+IP=$serverIp
+Port=$serverPort
 
-        [Info]
-        ServerName=AI Knight Online
-        Website=https://ko.ai-nexus.net
+[Info]
+ServerName=AI Knight Online
+Website=https://ko.ai-nexus.net
+"@ | Out-File -FilePath "$distDir/server.ini" -Encoding ascii -NoNewline
 
-        [Settings]
-        AutoLogin=0
-        "@ | Out-File -FilePath "$distDir/server.ini" -Encoding utf8
-
-        # Create launcher batch file
+        # Create launcher
         @"
-        @echo off
-        title AI Knight Online
-        echo Starting AI Knight Online...
-        echo Server: $serverIp`:$serverPort
-        echo.
-        start "" "KnightOnLine.exe"
-        "@ | Out-File -FilePath "$distDir/Play_AI_Knight.bat" -Encoding ascii
+@echo off
+title AI Knight Online
+echo ========================================
+echo    AI Knight Online
+echo    Server: $serverIp`:$serverPort
+echo ========================================
+echo.
+echo Starting game...
+start "" "KnightOnLine.exe"
+"@ | Out-File -FilePath "$distDir/Play_AI_Knight.bat" -Encoding ascii
 
         # Create README
         @"
-        ================================
-        AI Knight Online Client
-        ================================
+========================================
+  AI Knight Online Client
+========================================
 
-        Server: $serverIp
-        Port: $serverPort
-        Website: https://ko.ai-nexus.net
+Server: $serverIp
+Port: $serverPort
+Website: https://ko.ai-nexus.net
 
-        HOW TO PLAY:
-        1. Double-click Play_AI_Knight.bat
-        2. Or run KnightOnLine.exe directly
+HOW TO PLAY:
+1. Run Play_AI_Knight.bat
+2. Or run KnightOnLine.exe directly
 
-        REQUIREMENTS:
-        - Windows 10/11 64-bit
-        - DirectX 9.0c
-        - Visual C++ Redistributable 2022
+REQUIREMENTS:
+- Windows 10/11 64-bit
+- DirectX 9.0c
+- Visual C++ Redistributable 2022
 
-        SUPPORT:
-        Visit https://ko.ai-nexus.net for help
+Build: ${{ github.sha }}
+Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm UTC')
+"@ | Out-File -FilePath "$distDir/README.txt" -Encoding ascii
 
-        Build: ${{ github.sha }}
-        Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
-        "@ | Out-File -FilePath "$distDir/README.txt" -Encoding utf8
-
+        Write-Host ""
         Write-Host "=== Distribution Contents ==="
-        Get-ChildItem $distDir -Recurse | Select-Object FullName, Length
+        Get-ChildItem $distDir -Recurse | Format-Table Name, Length -AutoSize
 
     - name: Upload Client Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AI-Knight-Online-Client-${{ github.sha }}
+        name: AI-Knight-Online-Client-x64
         path: AI_Knight_Online_Client/
         retention-days: 90
-        if-no-files-found: warn
-
-    - name: Create Release Package
-      if: startsWith(github.ref, 'refs/tags/')
-      shell: pwsh
-      run: |
-        Compress-Archive -Path "AI_Knight_Online_Client/*" -DestinationPath "AI_Knight_Online_Client.zip"
-
-    - name: Upload Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      with:
-        files: AI_Knight_Online_Client.zip
-        generate_release_notes: true
+        if-no-files-found: error
