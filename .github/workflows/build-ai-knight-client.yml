@@ -1,0 +1,149 @@
+# AI Knight Online - Client Build Workflow
+# Compiles the Knight Online client and creates downloadable artifacts
+
+name: "AI Knight Online - Build Client"
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      server_ip:
+        description: 'Game server address'
+        required: false
+        default: 'game.ai-nexus.net'
+      server_port:
+        description: 'Game server port'
+        required: false
+        default: '15000'
+
+concurrency:
+  group: "ai-knight-${{ github.ref || github.run_id }}"
+  cancel-in-progress: true
+
+env:
+  BUILD_CONFIGURATION: Release
+  BUILD_PLATFORM: x64
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: "Build AI Knight Client (x64 Release)"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v2
+
+    - name: Restore NuGet packages
+      run: nuget restore Client.slnx
+
+    - name: Build Client
+      run: |
+        msbuild /m /p:Configuration="${{env.BUILD_CONFIGURATION}}" /p:Platform="${{env.BUILD_PLATFORM}}" Client.slnx
+
+    - name: Prepare Distribution
+      shell: pwsh
+      run: |
+        $distDir = "AI_Knight_Online_Client"
+        New-Item -ItemType Directory -Force -Path $distDir
+
+        # Find and copy built executables
+        $binPaths = @(
+          "src/Client/N3Base/bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}",
+          "src/Client/WarFare/bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}",
+          "bin/${{env.BUILD_PLATFORM}}/${{env.BUILD_CONFIGURATION}}"
+        )
+
+        foreach ($path in $binPaths) {
+          if (Test-Path $path) {
+            Write-Host "Copying from: $path"
+            Copy-Item "$path/*" -Destination $distDir -Recurse -Force -ErrorAction SilentlyContinue
+          }
+        }
+
+        # Create server configuration
+        $serverIp = "${{ github.event.inputs.server_ip || 'game.ai-nexus.net' }}"
+        $serverPort = "${{ github.event.inputs.server_port || '15000' }}"
+
+        @"
+        [Server]
+        IP=$serverIp
+        Port=$serverPort
+
+        [Info]
+        ServerName=AI Knight Online
+        Website=https://ko.ai-nexus.net
+
+        [Settings]
+        AutoLogin=0
+        "@ | Out-File -FilePath "$distDir/server.ini" -Encoding utf8
+
+        # Create launcher batch file
+        @"
+        @echo off
+        title AI Knight Online
+        echo Starting AI Knight Online...
+        echo Server: $serverIp`:$serverPort
+        echo.
+        start "" "KnightOnLine.exe"
+        "@ | Out-File -FilePath "$distDir/Play_AI_Knight.bat" -Encoding ascii
+
+        # Create README
+        @"
+        ================================
+        AI Knight Online Client
+        ================================
+
+        Server: $serverIp
+        Port: $serverPort
+        Website: https://ko.ai-nexus.net
+
+        HOW TO PLAY:
+        1. Double-click Play_AI_Knight.bat
+        2. Or run KnightOnLine.exe directly
+
+        REQUIREMENTS:
+        - Windows 10/11 64-bit
+        - DirectX 9.0c
+        - Visual C++ Redistributable 2022
+
+        SUPPORT:
+        Visit https://ko.ai-nexus.net for help
+
+        Build: ${{ github.sha }}
+        Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
+        "@ | Out-File -FilePath "$distDir/README.txt" -Encoding utf8
+
+        Write-Host "=== Distribution Contents ==="
+        Get-ChildItem $distDir -Recurse | Select-Object FullName, Length
+
+    - name: Upload Client Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AI-Knight-Online-Client-${{ github.sha }}
+        path: AI_Knight_Online_Client/
+        retention-days: 90
+        if-no-files-found: warn
+
+    - name: Create Release Package
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: pwsh
+      run: |
+        Compress-Archive -Path "AI_Knight_Online_Client/*" -DestinationPath "AI_Knight_Online_Client.zip"
+
+    - name: Upload Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: AI_Knight_Online_Client.zip
+        generate_release_notes: true
