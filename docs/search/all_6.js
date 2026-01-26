@@ -18,5 +18,6 @@ var searchData=
   ['finisheddecoding_15',['FinishedDecoding',['../classStreamedAudioHandle.html#a6171cad9643f37d442fc936b1fdeeac6',1,'StreamedAudioHandle']]],
   ['finishedplaying_16',['FinishedPlaying',['../classAudioHandle.html#a6419b782604efdaafab15f4c6e384eee',1,'AudioHandle']]],
   ['flush_17',['Flush',['../classFile.html#ac7be67d3745335a0447d4d2a917a7126',1,'File::Flush()'],['../classFileReader.html#a84fa3484423683b25f871dceaeea7586',1,'FileReader::Flush()'],['../classFileWriter.html#af6fc7dafc73d98dfcc6a79f1e248b118',1,'FileWriter::Flush() override']]],
-  ['flushimpl_18',['FlushImpl',['../classFileWriter.html#a8cff57026c7856f7e4dc3c0c7902a86c',1,'FileWriter']]]
+  ['flushimpl_18',['FlushImpl',['../classFileWriter.html#a8cff57026c7856f7e4dc3c0c7902a86c',1,'FileWriter']]],
+  ['force_5freinstall_19',['force_reinstall',['../classlauncher_1_1Launcher.html#aecd32a26293f2108d0ddfeb6d64f08b4',1,'launcher::Launcher']]]
 ];

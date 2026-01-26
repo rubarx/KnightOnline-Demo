@@ -12,9 +12,10 @@ var searchData=
   ['poolconnection_9',['PoolConnection',['../classdb_1_1PoolConnection.html',1,'db']]],
   ['postwhereclause_10',['PostWhereClause',['../classdb_1_1SqlBuilder.html#a7cb3f16614aa1a913d39a353808f2635',1,'db::SqlBuilder']]],
   ['prepare_11',['prepare',['../classdb_1_1ModelRecordSet.html#a611ec9b6c0fc9f8760cc18c5ca403c0e',1,'db::ModelRecordSet::prepare() noexcept(false)'],['../classdb_1_1ModelRecordSet.html#ab0a70bf171de4edc1420c9604d802b0e',1,'db::ModelRecordSet::prepare(SqlBuilder&lt; ModelType &gt; &amp;filterObj) noexcept(false)']]],
-  ['processcommandlineargs_12',['ProcessCommandLineArgs',['../classEbenezer_1_1EbenezerApp.html#aa3ff5107813f41e9f2060c34d6e28d88',1,'Ebenezer::EbenezerApp::ProcessCommandLineArgs()'],['../classAppThread.html#a4a57fd28276fe689af4b8d487eccfe4d',1,'AppThread::ProcessCommandLineArgs()']]],
-  ['project_20goals_13',['It must respect our project goals',['../index.html#autotoc_md6',1,'']]],
-  ['project_20setup_14',['Project Setup',['../index.html#autotoc_md1',1,'']]],
-  ['pullbufferedsourceidfrompool_15',['PullBufferedSourceIdFromPool',['../classCN3SndMgr.html#a5efea5e8b2ac31227b23de3fc005c23b',1,'CN3SndMgr']]],
-  ['pullstreamedsourceidfrompool_16',['PullStreamedSourceIdFromPool',['../classCN3SndMgr.html#ae0157fc30bd06eaed95b4585748857b0',1,'CN3SndMgr']]]
+  ['process_5fversion_5finfo_12',['process_version_info',['../classlauncher_1_1Launcher.html#ab05522a2855ac9658c54b2566fbd66de',1,'launcher::Launcher']]],
+  ['processcommandlineargs_13',['ProcessCommandLineArgs',['../classEbenezer_1_1EbenezerApp.html#aa3ff5107813f41e9f2060c34d6e28d88',1,'Ebenezer::EbenezerApp::ProcessCommandLineArgs()'],['../classAppThread.html#a4a57fd28276fe689af4b8d487eccfe4d',1,'AppThread::ProcessCommandLineArgs()']]],
+  ['project_20goals_14',['It must respect our project goals',['../index.html#autotoc_md6',1,'']]],
+  ['project_20setup_15',['Project Setup',['../index.html#autotoc_md1',1,'']]],
+  ['pullbufferedsourceidfrompool_16',['PullBufferedSourceIdFromPool',['../classCN3SndMgr.html#a5efea5e8b2ac31227b23de3fc005c23b',1,'CN3SndMgr']]],
+  ['pullstreamedsourceidfrompool_17',['PullStreamedSourceIdFromPool',['../classCN3SndMgr.html#ae0157fc30bd06eaed95b4585748857b0',1,'CN3SndMgr']]]
 ];

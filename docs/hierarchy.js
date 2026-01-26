@@ -190,6 +190,7 @@ var hierarchy =
     [ "ByteBuffer", "classByteBuffer.html", [
       [ "Packet", "classPacket.html", null ]
     ] ],
+    [ "launcher.C", "classlauncher_1_1C.html", null ],
     [ "Ebenezer::C3DMap", "classEbenezer_1_1C3DMap.html", null ],
     [ "CAPISocket", "classCAPISocket.html", null ],
     [ "CBackgroundUtil", "classCBackgroundUtil.html", null ],
@@ -696,6 +697,7 @@ var hierarchy =
     ] ],
     [ "FileReaderHandle", "structFileReaderHandle.html", null ],
     [ "ItemTooltipBuilderContext", "classItemTooltipBuilderContext.html", null ],
+    [ "launcher.Launcher", "classlauncher_1_1Launcher.html", null ],
     [ "logger::Logger", "classlogger_1_1Logger.html", [
       [ "AIServer::AIServerLogger", "classAIServer_1_1AIServerLogger.html", null ],
       [ "Ebenezer::EbenezerLogger", "classEbenezer_1_1EbenezerLogger.html", null ],

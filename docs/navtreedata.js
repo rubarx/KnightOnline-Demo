@@ -37,6 +37,9 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Todo List", "todo.html", null ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -64,8 +67,8 @@ var NAVTREEINDEX =
 "classAppThread.html#a739db39ea284bce3526859c3d0464bc7",
 "classCN3CPlug__Cloak.html",
 "classCUINPCChangeEvent.html",
-"crc32_8cpp_source.html",
-"struct____InfoSelectedIcon.html"
+"classlauncher_1_1Launcher.html#a215fc79472321a0ed01492f47c063fb9",
+"struct__POINT.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

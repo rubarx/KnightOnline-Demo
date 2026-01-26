@@ -7,11 +7,12 @@ var searchData=
   ['initopenal_4',['InitOpenAL',['../classCN3SndMgr.html#ad32f059026205b8905be8890d3f69200',1,'CN3SndMgr']]],
   ['initsharedmemory_5',['InitSharedMemory',['../classAujard_1_1AujardApp.html#a0618a041449395f31436694108cc06a8',1,'Aujard::AujardApp']]],
   ['insertversion_6',['InsertVersion',['../classVersionManager_1_1CDBProcess.html#a29e1cd6c86715169949a131b77d90b58',1,'VersionManager::CDBProcess']]],
-  ['isattackabletarget_7',['IsAttackableTarget',['../classCPlayerMySelf.html#a4d9d444ecfcf1f73704f881291afed80',1,'CPlayerMySelf']]],
-  ['iscurrentuser_8',['IsCurrentUser',['../classVersionManager_1_1CDBProcess.html#a2cfc314e98240bc9df0ecf954af3c659',1,'VersionManager::CDBProcess']]],
-  ['isfinished_9',['IsFinished',['../classCN3SndObj.html#a0ed47ada9c9c27b6e2cb307b227cc057',1,'CN3SndObj']]],
-  ['islooping_10',['IsLooping',['../classCN3SndObj.html#abc0441a1da42a5d4f47207f1f64a8b47',1,'CN3SndObj']]],
-  ['isopen_11',['IsOpen',['../classFile.html#a651de32b8cfcbc2ef5f8f9bc1caee47c',1,'File']]],
-  ['isstarted_12',['IsStarted',['../classCN3SndObj.html#adb00ca2f06d208ffbe3ae663da782476',1,'CN3SndObj']]],
-  ['isvalidposition_13',['IsValidPosition',['../classAIServer_1_1MAP.html#a841c808480f6c9bd30b16aef317b46ee',1,'AIServer::MAP']]]
+  ['install_5fgame_7',['install_game',['../classlauncher_1_1Launcher.html#a73f3635164f90acd2d67ebd26e5a97d8',1,'launcher::Launcher']]],
+  ['isattackabletarget_8',['IsAttackableTarget',['../classCPlayerMySelf.html#a4d9d444ecfcf1f73704f881291afed80',1,'CPlayerMySelf']]],
+  ['iscurrentuser_9',['IsCurrentUser',['../classVersionManager_1_1CDBProcess.html#a2cfc314e98240bc9df0ecf954af3c659',1,'VersionManager::CDBProcess']]],
+  ['isfinished_10',['IsFinished',['../classCN3SndObj.html#a0ed47ada9c9c27b6e2cb307b227cc057',1,'CN3SndObj']]],
+  ['islooping_11',['IsLooping',['../classCN3SndObj.html#abc0441a1da42a5d4f47207f1f64a8b47',1,'CN3SndObj']]],
+  ['isopen_12',['IsOpen',['../classFile.html#a651de32b8cfcbc2ef5f8f9bc1caee47c',1,'File']]],
+  ['isstarted_13',['IsStarted',['../classCN3SndObj.html#adb00ca2f06d208ffbe3ae663da782476',1,'CN3SndObj']]],
+  ['isvalidposition_14',['IsValidPosition',['../classAIServer_1_1MAP.html#a841c808480f6c9bd30b16aef317b46ee',1,'AIServer::MAP']]]
 ];

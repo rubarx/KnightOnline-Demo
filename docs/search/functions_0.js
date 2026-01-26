@@ -8,8 +8,10 @@ var searchData=
   ['allcharinforeq_5',['AllCharInfoReq',['../classAujard_1_1AujardApp.html#a26db7c5d469e2b1816807b61aa4cb2cb',1,'Aujard::AujardApp']]],
   ['allknightsmember_6',['AllKnightsMember',['../classAujard_1_1AujardApp.html#aadd4a2f14810587eb69c8a9a4cb44df3',1,'Aujard::AujardApp']]],
   ['allsaveroutine_7',['AllSaveRoutine',['../classAujard_1_1AujardApp.html#a970679ab2c1e925b33a1cd714934c4bb',1,'Aujard::AujardApp']]],
-  ['attemptopensharedmemory_8',['AttemptOpenSharedMemory',['../classAujard_1_1AujardApp.html#a7aa7b074a8c48e4e680c722cbfa0a123',1,'Aujard::AujardApp::AttemptOpenSharedMemory()'],['../classItemManager_1_1ItemManagerApp.html#a98ce65eab5961c15679a865774a797d2',1,'ItemManager::ItemManagerApp::AttemptOpenSharedMemory()']]],
-  ['attemptopensharedmemorythreadtick_9',['AttemptOpenSharedMemoryThreadTick',['../classAujard_1_1AujardApp.html#afaa4ac47df84344781f627ffce576113',1,'Aujard::AujardApp::AttemptOpenSharedMemoryThreadTick()'],['../classItemManager_1_1ItemManagerApp.html#a62e240e2503e3248ca6035b13bcd6928',1,'ItemManager::ItemManagerApp::AttemptOpenSharedMemoryThreadTick()']]],
-  ['audiohandle_10',['AudioHandle',['../classAudioHandle.html#a744406c79ff025b3914290d369b9786b',1,'AudioHandle']]],
-  ['audiothread_11',['AudioThread',['../classAudioThread.html#a00f4017141af67fff0e85f4d7c1595e3',1,'AudioThread']]]
+  ['apply_5fupdate_8',['apply_update',['../classlauncher_1_1Launcher.html#aeb2ff02465a3502716d3d69bfff69e99',1,'launcher::Launcher']]],
+  ['attemptopensharedmemory_9',['AttemptOpenSharedMemory',['../classAujard_1_1AujardApp.html#a7aa7b074a8c48e4e680c722cbfa0a123',1,'Aujard::AujardApp::AttemptOpenSharedMemory()'],['../classItemManager_1_1ItemManagerApp.html#a98ce65eab5961c15679a865774a797d2',1,'ItemManager::ItemManagerApp::AttemptOpenSharedMemory()']]],
+  ['attemptopensharedmemorythreadtick_10',['AttemptOpenSharedMemoryThreadTick',['../classAujard_1_1AujardApp.html#afaa4ac47df84344781f627ffce576113',1,'Aujard::AujardApp::AttemptOpenSharedMemoryThreadTick()'],['../classItemManager_1_1ItemManagerApp.html#a62e240e2503e3248ca6035b13bcd6928',1,'ItemManager::ItemManagerApp::AttemptOpenSharedMemoryThreadTick()']]],
+  ['audiohandle_11',['AudioHandle',['../classAudioHandle.html#a744406c79ff025b3914290d369b9786b',1,'AudioHandle']]],
+  ['audiothread_12',['AudioThread',['../classAudioThread.html#a00f4017141af67fff0e85f4d7c1595e3',1,'AudioThread']]],
+  ['auto_5fapply_5fupdate_13',['auto_apply_update',['../classlauncher_1_1Launcher.html#ada778e31d66aaa4fcd577f893116f410',1,'launcher::Launcher']]]
 ];

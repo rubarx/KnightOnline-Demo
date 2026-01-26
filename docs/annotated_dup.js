@@ -96,6 +96,10 @@ var annotated_dup =
       [ "ItemManagerLogger", "classItemManager_1_1ItemManagerLogger.html", null ],
       [ "ItemManagerReadQueueThread", "classItemManager_1_1ItemManagerReadQueueThread.html", null ]
     ] ],
+    [ "launcher", "namespacelauncher.html", [
+      [ "C", "classlauncher_1_1C.html", null ],
+      [ "Launcher", "classlauncher_1_1Launcher.html", "classlauncher_1_1Launcher" ]
+    ] ],
     [ "logger", null, [
       [ "Logger", "classlogger_1_1Logger.html", "classlogger_1_1Logger" ]
     ] ],

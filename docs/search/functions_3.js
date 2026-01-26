@@ -8,5 +8,7 @@ var searchData=
   ['deletechar_5',['DeleteChar',['../classAujard_1_1AujardApp.html#a2319162972a2e6189f449b598787f53d',1,'Aujard::AujardApp']]],
   ['deleteknights_6',['DeleteKnights',['../classAujard_1_1CDBAgent.html#ac7d29c0d2238aa987124443859cd99cf',1,'Aujard::CDBAgent']]],
   ['deleteversion_7',['DeleteVersion',['../classVersionManager_1_1CDBProcess.html#a6e226f38657a6c95067379ec1ba28893',1,'VersionManager::CDBProcess']]],
-  ['destroyknights_8',['DestroyKnights',['../classAujard_1_1AujardApp.html#ae96bcba0ad5bfa2d8ef9b07ebf033317',1,'Aujard::AujardApp']]]
+  ['destroyknights_8',['DestroyKnights',['../classAujard_1_1AujardApp.html#ae96bcba0ad5bfa2d8ef9b07ebf033317',1,'Aujard::AujardApp']]],
+  ['download_5fpatch_9',['download_patch',['../classlauncher_1_1Launcher.html#a5a00dba672aaec9173e63b2c83d6c4a5',1,'launcher::Launcher']]],
+  ['download_5fupdate_10',['download_update',['../classlauncher_1_1Launcher.html#a66905e0ad5d5093613bdee00919d47c6',1,'launcher::Launcher']]]
 ];
