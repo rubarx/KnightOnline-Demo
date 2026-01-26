@@ -205,12 +205,12 @@ jobs:
         $dgVoodooConf | Out-File "$distDir/dgVoodoo.conf" -Encoding ascii
         Write-Host "  Created dgVoodoo.conf"
 
-        # Create config files
+        # Create config files - OpenKO format for Server.ini
         $serverIp = "${{ github.event.inputs.server_ip }}"
-        $serverPort = "${{ github.event.inputs.server_port }}"
         if ([string]::IsNullOrEmpty($serverIp)) { $serverIp = "game.ai-nexus.net" }
-        if ([string]::IsNullOrEmpty($serverPort)) { $serverPort = "15000" }
-        "[Server]`r`nIP=$serverIp`r`nPort=$serverPort`r`n[Info]`r`nServerName=AI Knight Online" | Out-File "$distDir/server.ini" -Encoding ascii
+        # OpenKO Server.ini format: [Server] Count=N, IP0=..., IP1=..., etc.
+        "[Server]`r`nCount=1`r`nIP0=$serverIp`r`n`r`n[Version]`r`nFiles=1299`r`n`r`n[Join]`r`nRegistration site=https://ko.ai-nexus.net/register" | Out-File "$distDir/Server.ini" -Encoding ascii
+        Write-Host "Created Server.ini with IP0=$serverIp"
         "[Video,_,1,0,1,1,1024,768,32,1,1,2,3,100,110,0,0,1,0,1]" | Out-File "$distDir/option.ini" -Encoding ascii
 
         # Create Play.bat with helpful info

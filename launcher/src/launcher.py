@@ -682,13 +682,19 @@ Castle Siege le dimanche"""
     def launch_game(self):
         game_exe = self.install_path / CONFIG["game_exe"]
 
-        # Create server.ini
+        # Create Server.ini with correct OpenKO format
         try:
-            ini = self.install_path / "server.ini"
+            ini = self.install_path / "Server.ini"
             with open(ini, "w") as f:
-                f.write(f"[Server]\n")
-                f.write(f"ip={CONFIG['server_ip']}\n")
-                f.write(f"serverport={CONFIG['server_port']}\n")
+                f.write("[Server]\n")
+                f.write("Count=1\n")
+                f.write(f"IP0={CONFIG['server_ip']}\n")
+                f.write("\n")
+                f.write("[Version]\n")
+                f.write("Files=1299\n")
+                f.write("\n")
+                f.write("[Join]\n")
+                f.write(f"Registration site={CONFIG['website_url']}/register\n")
         except:
             pass
 
