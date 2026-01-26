@@ -85,8 +85,10 @@ jobs:
         $dgVoodooUrl = "https://github.com/dege-diosg/dgVoodoo2/releases/download/v2.86.5/dgVoodoo2_86_5.zip"
         Invoke-WebRequest -Uri $dgVoodooUrl -OutFile "dgvoodoo.zip" -UseBasicParsing
         Expand-Archive -Path "dgvoodoo.zip" -DestinationPath "dgvoodoo" -Force
-        Write-Host "dgVoodoo2 extracted"
-        Get-ChildItem dgvoodoo -Recurse -Filter "*.dll" | Select-Object FullName
+        Write-Host "dgVoodoo2 extracted - checking structure:"
+        Get-ChildItem dgvoodoo -Recurse | Select-Object FullName
+        Write-Host "=== DLL files found ==="
+        Get-ChildItem dgvoodoo -Recurse -Filter "*.dll" | ForEach-Object { Write-Host $_.FullName }
 
     - name: Debug Build Output
       shell: pwsh
@@ -120,29 +122,28 @@ jobs:
           Write-Host "Copied executables from build/bin/Release"
         }
 
-        # Copy ClientData - check for Data subfolder structure
+        # Copy ClientData - the entire folder content goes to the distribution root
+        # ClientData structure: Data/, Chr/, UI/, fx/, etc. + mss32.dll, Server.ini
+        # Game expects: Data\Texts_us.tbl (not Data\Data\Texts_us.tbl)
         if (Test-Path "build/ClientData") {
-          Write-Host "=== Analyzing ClientData structure ==="
+          Write-Host "=== Copying ClientData to distribution ==="
 
-          # Check if ClientData has a Data subfolder
-          if (Test-Path "build/ClientData/Data") {
-            Write-Host "Found Data subfolder in ClientData"
-            Copy-Item "build/ClientData/Data" -Destination "$distDir/Data" -Recurse -Force
-          } else {
-            # Copy entire ClientData as Data
-            New-Item -ItemType Directory -Force -Path "$distDir/Data"
-            Copy-Item "build/ClientData/*" -Destination "$distDir/Data" -Recurse -Force
+          # Copy ALL contents of ClientData directly to distDir
+          # This preserves the correct structure: distDir/Data/Texts_us.tbl, distDir/Chr/, etc.
+          Get-ChildItem "build/ClientData" | ForEach-Object {
+            Write-Host "Copying $($_.Name)..."
+            Copy-Item $_.FullName -Destination $distDir -Recurse -Force
           }
 
-          # Also copy any root-level files from ClientData (like Server.ini)
-          Get-ChildItem "build/ClientData" -File | Copy-Item -Destination $distDir -Force
+          # Verify the structure
+          Write-Host "=== Distribution structure ==="
+          Get-ChildItem $distDir | Select-Object Name
 
-          # List what was copied
-          Write-Host "=== Data folder contents ==="
+          # Check .tbl files are in the right place
           if (Test-Path "$distDir/Data") {
-            Get-ChildItem "$distDir/Data" -Recurse -File | Select-Object Name | ForEach-Object { Write-Host $_.Name }
-            $tblCount = (Get-ChildItem "$distDir/Data" -Recurse -Filter "*.tbl" | Measure-Object).Count
-            Write-Host "Total .tbl files: $tblCount"
+            $tblFiles = Get-ChildItem "$distDir/Data" -Filter "*.tbl" -ErrorAction SilentlyContinue
+            Write-Host "Direct .tbl files in Data/: $($tblFiles.Count)"
+            $tblFiles | Select-Object Name | ForEach-Object { Write-Host "  - $($_.Name)" }
           }
         } else {
           Write-Host "WARNING: ClientData not found - game data will be missing!"
@@ -164,15 +165,24 @@ jobs:
           }
         }
 
-        # Copy dgVoodoo2 D3D9.dll (x86 for 32-bit game OR x64 for 64-bit)
+        # Copy dgVoodoo2 D3D9.dll (x64 for 64-bit client)
         Write-Host "Copying dgVoodoo2 for DirectX 9 compatibility..."
-        # Try x64 first (for 64-bit client)
-        if (Test-Path "dgvoodoo/MS/x64/D3D9.dll") {
-          Copy-Item "dgvoodoo/MS/x64/D3D9.dll" -Destination $distDir -Force
+        # Find D3D9.dll in dgvoodoo folder (handle different archive structures)
+        $d3d9Dll = Get-ChildItem "dgvoodoo" -Recurse -Filter "D3D9.dll" | Where-Object { $_.DirectoryName -like "*x64*" } | Select-Object -First 1
+        if ($d3d9Dll) {
+          Write-Host "  Found x64 D3D9.dll at: $($d3d9Dll.FullName)"
+          Copy-Item $d3d9Dll.FullName -Destination $distDir -Force
           Write-Host "  Copied dgVoodoo2 D3D9.dll (x64)"
-        } elseif (Test-Path "dgvoodoo/MS/x86/D3D9.dll") {
-          Copy-Item "dgvoodoo/MS/x86/D3D9.dll" -Destination $distDir -Force
-          Write-Host "  Copied dgVoodoo2 D3D9.dll (x86)"
+        } else {
+          # Try x86 as fallback
+          $d3d9Dll = Get-ChildItem "dgvoodoo" -Recurse -Filter "D3D9.dll" | Select-Object -First 1
+          if ($d3d9Dll) {
+            Write-Host "  Found D3D9.dll at: $($d3d9Dll.FullName)"
+            Copy-Item $d3d9Dll.FullName -Destination $distDir -Force
+            Write-Host "  Copied dgVoodoo2 D3D9.dll"
+          } else {
+            Write-Host "  WARNING: dgVoodoo2 D3D9.dll not found!"
+          }
         }
 
         # Create dgVoodoo.conf for optimal settings
