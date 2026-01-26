@@ -48,6 +48,54 @@ jobs:
       shell: pwsh
       run: cmake --build build --config Release --parallel
 
+    - name: Download DirectX Runtime
+      shell: pwsh
+      run: |
+        Write-Host "Downloading DirectX June 2010 Redistributable..."
+        $dxUrl = "https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe"
+        Invoke-WebRequest -Uri $dxUrl -OutFile "directx_redist.exe" -UseBasicParsing
+
+        Write-Host "Extracting DirectX files..."
+        Start-Process -FilePath "directx_redist.exe" -ArgumentList "/Q", "/T:$PWD\dxtemp" -Wait
+
+        Write-Host "DirectX files extracted"
+        Get-ChildItem dxtemp -Filter "*.cab" | Select-Object Name
+
+    - name: Extract DirectX DLLs
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path "dxdlls"
+
+        # Extract d3dx9_43 DLLs (64-bit)
+        $cabFile = Get-ChildItem dxtemp -Filter "*d3dx9_43*x64*" | Select-Object -First 1
+        if ($cabFile) {
+          Write-Host "Extracting from $($cabFile.Name)..."
+          expand "$($cabFile.FullName)" -F:* dxdlls
+        }
+
+        # Also try Jun2010_d3dx9_43_x64.cab
+        if (Test-Path "dxtemp/Jun2010_d3dx9_43_x64.cab") {
+          expand "dxtemp/Jun2010_d3dx9_43_x64.cab" -F:* dxdlls
+        }
+
+        # Extract d3dx9_42 as fallback
+        if (Test-Path "dxtemp/Jun2010_d3dx9_42_x64.cab") {
+          expand "dxtemp/Jun2010_d3dx9_42_x64.cab" -F:* dxdlls
+        }
+
+        # Extract D3DCompiler
+        if (Test-Path "dxtemp/Jun2010_D3DCompiler_43_x64.cab") {
+          expand "dxtemp/Jun2010_D3DCompiler_43_x64.cab" -F:* dxdlls
+        }
+
+        # Also get 32-bit versions for compatibility
+        if (Test-Path "dxtemp/Jun2010_d3dx9_43_x86.cab") {
+          expand "dxtemp/Jun2010_d3dx9_43_x86.cab" -F:* dxdlls
+        }
+
+        Write-Host "=== Extracted DLLs ==="
+        Get-ChildItem dxdlls -Filter "*.dll" | Select-Object Name, Length
+
     - name: Prepare Distribution
       shell: pwsh
       run: |
@@ -71,6 +119,26 @@ jobs:
           Write-Host "Copied ClientData"
         }
 
+        # Copy DirectX DLLs
+        Write-Host "Copying DirectX DLLs..."
+        Get-ChildItem "dxdlls" -Filter "*.dll" | ForEach-Object {
+          Copy-Item $_.FullName -Destination $distDir -Force
+          Write-Host "  Copied $($_.Name)"
+        }
+
+        # Copy Visual C++ Runtime DLLs from system
+        $vcDlls = @(
+          "C:\Windows\System32\msvcp140.dll",
+          "C:\Windows\System32\vcruntime140.dll",
+          "C:\Windows\System32\vcruntime140_1.dll"
+        )
+        foreach ($dll in $vcDlls) {
+          if (Test-Path $dll) {
+            Copy-Item $dll -Destination $distDir -Force
+            Write-Host "  Copied $(Split-Path $dll -Leaf)"
+          }
+        }
+
         # Create config files
         $serverIp = "${{ github.event.inputs.server_ip }}"
         $serverPort = "${{ github.event.inputs.server_port }}"
@@ -78,11 +146,44 @@ jobs:
         if ([string]::IsNullOrEmpty($serverPort)) { $serverPort = "15000" }
 
         "[Server]`r`nIP=$serverIp`r`nPort=$serverPort`r`n[Info]`r`nServerName=AI Knight Online" | Out-File "$distDir/server.ini" -Encoding ascii
-        "@echo off`r`necho Starting AI Knight Online...`r`nstart KnightOnLine.exe" | Out-File "$distDir/Play.bat" -Encoding ascii
-        "AI Knight Online - Server: ${serverIp}:${serverPort} - Build: ${{ github.sha }}" | Out-File "$distDir/README.txt" -Encoding ascii
+
+        # Create Play.bat
+        @"
+@echo off
+echo ============================================
+echo    AI Knight Online
+echo    Server: $serverIp`:$serverPort
+echo ============================================
+echo.
+start KnightOnLine.exe
+"@ | Out-File "$distDir/Play.bat" -Encoding ascii
+
+        # Create README
+        @"
+AI Knight Online - Client v1.2.0
+================================
+Server: $serverIp`:$serverPort
+Build: ${{ github.sha }}
+
+INSTRUCTIONS:
+1. Double-cliquez sur Play.bat ou KnightOnLine.exe
+2. Le jeu devrait demarrer directement
+
+INCLUS:
+- DirectX 9 DLLs (d3dx9_43.dll, etc.)
+- Visual C++ Runtime DLLs
+
+PROBLEMES?
+- Si erreur DLL manquante: installez DirectX 9 Runtime
+  https://www.microsoft.com/en-us/download/details.aspx?id=35
+- Si erreur Visual C++: installez VC++ 2015-2022 Redistributable
+  https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+Support: https://ko.ai-nexus.net/support
+"@ | Out-File "$distDir/README.txt" -Encoding ascii
 
         Write-Host "=== Distribution Contents ==="
-        Get-ChildItem $distDir -Recurse | Select-Object Name, Length
+        Get-ChildItem $distDir -Recurse | Select-Object Name, Length | Format-Table
 
     - name: Upload Client Artifact
       uses: actions/upload-artifact@v4
