@@ -78,11 +78,39 @@ jobs:
         Write-Host "=== Extracted DLLs ==="
         Get-ChildItem dxdlls -Filter "*.dll" | Select-Object Name, Length
 
+    - name: Download dgVoodoo2 for DirectX 9 Compatibility
+      shell: pwsh
+      run: |
+        Write-Host "Downloading dgVoodoo2 for DirectX 9 compatibility..."
+        $dgVoodooUrl = "https://github.com/dege-diosg/dgVoodoo2/releases/download/v2.86.5/dgVoodoo2_86_5.zip"
+        Invoke-WebRequest -Uri $dgVoodooUrl -OutFile "dgvoodoo.zip" -UseBasicParsing
+        Expand-Archive -Path "dgvoodoo.zip" -DestinationPath "dgvoodoo" -Force
+        Write-Host "dgVoodoo2 extracted"
+        Get-ChildItem dgvoodoo -Recurse -Filter "*.dll" | Select-Object FullName
+
+    - name: Debug Build Output
+      shell: pwsh
+      run: |
+        Write-Host "=== Checking build directory structure ==="
+        if (Test-Path "build/ClientData") {
+          Write-Host "ClientData found. Contents:"
+          Get-ChildItem "build/ClientData" -Recurse | Select-Object FullName | ForEach-Object { Write-Host $_.FullName }
+        } else {
+          Write-Host "WARNING: build/ClientData not found!"
+        }
+        Write-Host ""
+        Write-Host "=== Checking build/bin ==="
+        if (Test-Path "build/bin") {
+          Get-ChildItem "build/bin" -Recurse | Select-Object FullName, Length
+        }
+
     - name: Prepare Distribution
       shell: pwsh
       run: |
         $distDir = "AI_Knight_Online_Client"
         New-Item -ItemType Directory -Force -Path $distDir
+
+        # Copy executables
         if (Test-Path "build/bin") {
           Get-ChildItem "build/bin" -File | Copy-Item -Destination $distDir -Force
           Write-Host "Copied executables from build/bin"
@@ -91,16 +119,43 @@ jobs:
           Get-ChildItem "build/bin/Release" -File | Copy-Item -Destination $distDir -Force
           Write-Host "Copied executables from build/bin/Release"
         }
+
+        # Copy ClientData - check for Data subfolder structure
         if (Test-Path "build/ClientData") {
-          New-Item -ItemType Directory -Force -Path "$distDir/Data"
-          Copy-Item "build/ClientData/*" -Destination "$distDir/Data" -Recurse -Force -ErrorAction SilentlyContinue
-          Write-Host "Copied ClientData"
+          Write-Host "=== Analyzing ClientData structure ==="
+
+          # Check if ClientData has a Data subfolder
+          if (Test-Path "build/ClientData/Data") {
+            Write-Host "Found Data subfolder in ClientData"
+            Copy-Item "build/ClientData/Data" -Destination "$distDir/Data" -Recurse -Force
+          } else {
+            # Copy entire ClientData as Data
+            New-Item -ItemType Directory -Force -Path "$distDir/Data"
+            Copy-Item "build/ClientData/*" -Destination "$distDir/Data" -Recurse -Force
+          }
+
+          # Also copy any root-level files from ClientData (like Server.ini)
+          Get-ChildItem "build/ClientData" -File | Copy-Item -Destination $distDir -Force
+
+          # List what was copied
+          Write-Host "=== Data folder contents ==="
+          if (Test-Path "$distDir/Data") {
+            Get-ChildItem "$distDir/Data" -Recurse -File | Select-Object Name | ForEach-Object { Write-Host $_.Name }
+            $tblCount = (Get-ChildItem "$distDir/Data" -Recurse -Filter "*.tbl" | Measure-Object).Count
+            Write-Host "Total .tbl files: $tblCount"
+          }
+        } else {
+          Write-Host "WARNING: ClientData not found - game data will be missing!"
         }
+
+        # Copy DirectX DLLs
         Write-Host "Copying DirectX DLLs..."
         Get-ChildItem "dxdlls" -Filter "*.dll" | ForEach-Object {
           Copy-Item $_.FullName -Destination $distDir -Force
           Write-Host "  Copied $($_.Name)"
         }
+
+        # Copy VC++ Runtime DLLs
         $vcDlls = @("C:\Windows\System32\msvcp140.dll", "C:\Windows\System32\vcruntime140.dll", "C:\Windows\System32\vcruntime140_1.dll")
         foreach ($dll in $vcDlls) {
           if (Test-Path $dll) {
@@ -108,15 +163,93 @@ jobs:
             Write-Host "  Copied $(Split-Path $dll -Leaf)"
           }
         }
+
+        # Copy dgVoodoo2 D3D9.dll (x86 for 32-bit game OR x64 for 64-bit)
+        Write-Host "Copying dgVoodoo2 for DirectX 9 compatibility..."
+        # Try x64 first (for 64-bit client)
+        if (Test-Path "dgvoodoo/MS/x64/D3D9.dll") {
+          Copy-Item "dgvoodoo/MS/x64/D3D9.dll" -Destination $distDir -Force
+          Write-Host "  Copied dgVoodoo2 D3D9.dll (x64)"
+        } elseif (Test-Path "dgvoodoo/MS/x86/D3D9.dll") {
+          Copy-Item "dgvoodoo/MS/x86/D3D9.dll" -Destination $distDir -Force
+          Write-Host "  Copied dgVoodoo2 D3D9.dll (x86)"
+        }
+
+        # Create dgVoodoo.conf for optimal settings
+        $dgVoodooConf = @"
+        [General]
+        OutputAPI = d3d11_fl11_0
+        Adapter = 0
+        FullScreenOutput = 0
+        DesiredRefreshRate = 0
+
+        [DirectX]
+        Videocard = dgVoodoo Virtual 3D Accelerated Card
+        VRAM = 2048
+        FastVideoMemoryAccess = true
+        dgVoodooWatermark = false
+        Resolution = 0x0@0
+        BilinearBlitStretch = false
+        AppControlledScreenMode = true
+        "@
+        $dgVoodooConf | Out-File "$distDir/dgVoodoo.conf" -Encoding ascii
+        Write-Host "  Created dgVoodoo.conf"
+
+        # Create config files
         $serverIp = "${{ github.event.inputs.server_ip }}"
         $serverPort = "${{ github.event.inputs.server_port }}"
         if ([string]::IsNullOrEmpty($serverIp)) { $serverIp = "game.ai-nexus.net" }
         if ([string]::IsNullOrEmpty($serverPort)) { $serverPort = "15000" }
         "[Server]`r`nIP=$serverIp`r`nPort=$serverPort`r`n[Info]`r`nServerName=AI Knight Online" | Out-File "$distDir/server.ini" -Encoding ascii
-        "`@echo off`r`necho AI Knight Online - Server: ${serverIp}:${serverPort}`r`nstart KnightOnLine.exe" | Out-File "$distDir/Play.bat" -Encoding ascii
-        "AI Knight Online v1.2.0`r`nServer: ${serverIp}:${serverPort}`r`nBuild: ${{ github.sha }}`r`n`r`nInclut DirectX 9 et VC++ DLLs.`r`nSi erreur DLL: https://www.microsoft.com/en-us/download/details.aspx?id=35" | Out-File "$distDir/README.txt" -Encoding ascii
-        Write-Host "=== Distribution Contents ==="
-        Get-ChildItem $distDir | Select-Object Name, Length
+        "[Video,_,1,0,1,1,1024,768,32,1,1,2,3,100,110,0,0,1,0,1]" | Out-File "$distDir/option.ini" -Encoding ascii
+
+        # Create Play.bat with helpful info
+        $playBat = @"
+        @echo off
+        echo =============================================
+        echo    AI Knight Online - Server: ${serverIp}:${serverPort}
+        echo =============================================
+        echo.
+        echo Utilise dgVoodoo2 pour compatibilite DirectX 9
+        echo.
+        echo Si le jeu crash:
+        echo   1. Lancez Option.exe pour configurer l'affichage
+        echo   2. Essayez le mode fenetre (1024x768)
+        echo.
+        start KnightOnLine.exe
+        "@
+        $playBat | Out-File "$distDir/Play.bat" -Encoding ascii
+
+        # Create README with full instructions
+        $readme = @"
+        AI Knight Online v1.3.0
+        Server: ${serverIp}:${serverPort}
+        Build: ${{ github.sha }}
+
+        CONTENU INCLUS:
+        - KnightOnLine.exe (Client principal)
+        - Data/ (Fichiers de jeu complets)
+        - DirectX 9 DLLs (d3dx9_43.dll)
+        - Visual C++ Runtime DLLs
+        - dgVoodoo2 (Compatibilite DirectX 9 sur Windows 10/11)
+
+        INSTRUCTIONS:
+        1. Double-cliquez sur Play.bat ou KnightOnLine.exe
+        2. Si erreur DirectX: dgVoodoo2 est deja inclus
+        3. Si crash: Lancez Option.exe d'abord
+
+        PROBLEMES COURANTS:
+        - Ecran noir puis fermeture: Option.exe > 1024x768 fenetre
+        - Erreur DLL manquante: Installez VC++ Redistributable 2015-2022
+        - Erreur DirectX: dgVoodoo2 devrait resoudre automatiquement
+
+        SUPPORT:
+        - Site: https://ko.ai-nexus.net
+        "@
+        $readme | Out-File "$distDir/README.txt" -Encoding ascii
+
+        Write-Host "=== Final Distribution Contents ==="
+        Get-ChildItem $distDir -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
 
     - name: Upload Client Artifact
       uses: actions/upload-artifact@v4
