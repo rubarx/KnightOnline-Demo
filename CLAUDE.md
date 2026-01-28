@@ -7,7 +7,8 @@ Ce projet est compile via GitHub Actions et distribue avec un launcher auto-upda
 
 **Repository** : https://github.com/rubarx/KnightOnline-Demo
 **Branche principale** : `demo`
-**Derniere release** : v1.1.0-demo
+**Derniere release** : v1.2.0-demo
+**Page de telechargement** : `website/index.html` (a deployer sur ton domaine)
 
 ---
 
@@ -97,6 +98,52 @@ CONFIG = {
 
 ---
 
+## Installer Standalone
+
+### Fichiers
+- `installer/KO-Demo-Installer.py` - Code source Python/Tkinter
+- `installer/build_installer.bat` - Script de compilation local
+
+### Fonctionnalites
+- Executable leger (~12 MB) distribuable seul
+- Telecharge le jeu complet depuis GitHub Releases
+- Interface d'installation avec choix du dossier
+- Barre de progression pendant le telechargement
+- Creation automatique de raccourcis (Bureau + Menu Demarrer)
+- Lancement du jeu apres installation
+
+### Utilisation
+1. L'utilisateur telecharge uniquement `KO-Demo-Setup.exe`
+2. Lance l'installer -> choisit le dossier d'installation
+3. L'installer telecharge ~335 MB depuis GitHub
+4. Extrait, cree les raccourcis, lance le jeu
+
+### Avantage
+Permet de distribuer un petit fichier de 12 MB au lieu du ZIP complet de 335 MB.
+L'installer telecharge toujours la derniere version depuis GitHub.
+
+---
+
+## Page Web de Telechargement
+
+### Fichier
+- `website/index.html` - Page HTML/CSS/JS complete
+
+### Fonctionnalites
+- Design professionnel theme sombre
+- Recupere automatiquement la derniere release via GitHub API
+- Deux options de telechargement :
+  - **Installer** (~12 MB) - Recommande
+  - **Package complet** (~335 MB)
+- Affiche les features custom
+- Liens vers GitHub
+
+### Deploiement
+Copier `website/index.html` sur ton serveur web (ko.ai-nexus.net ou autre).
+La page est autonome, pas de dependances externes sauf Google Fonts.
+
+---
+
 ## GitHub Actions Workflow
 
 ### Fichier : `.github/workflows/build_demo_release.yml`
@@ -111,26 +158,32 @@ CONFIG = {
 2. Setup Python 3.11
 3. Installation PyInstaller
 4. **Build Launcher** : `pyinstaller --onefile --windowed demo_launcher.py`
-5. Setup MSBuild
-6. **Build Client** : `msbuild /p:Configuration="Release" /p:Platform="x64" Client.slnx`
-7. Creation du package (copie exe, launcher, assets, README)
-8. Creation ZIP
-9. Upload artifact
-10. Creation release GitHub (si tag)
+5. **Build Installer** : `pyinstaller --onefile --windowed KO-Demo-Installer.py`
+6. Setup MSBuild
+7. **Build Client** : `msbuild /p:Configuration="Release" /p:Platform="x64" Client.slnx`
+8. Creation du package (copie exe, launcher, assets, README)
+9. Creation ZIP
+10. Upload artifacts (ZIP + Installer)
+11. Creation release GitHub avec les 2 fichiers (si tag)
 
-### Package de sortie
+### Fichiers de release
 ```
-KnightOnline-Demo-x64.zip
-├── KO-Demo-Launcher.exe    (11.7 MB - Launcher auto-update)
-├── KnightOnLine.exe        (4.3 MB - Client du jeu)
-├── Launch-Demo.bat         (Script batch simple)
-├── README.txt              (Instructions)
-├── Chr/                    (Assets personnages)
-├── Data/                   (Donnees du jeu)
-├── Obj/                    (Objets 3D)
-├── Sfx/                    (Effets sonores)
-├── Texture/                (Textures)
-└── UI_US/                  (Interface utilisateur)
+Release GitHub contient 2 fichiers :
+
+1. KO-Demo-Setup.exe          (~12 MB - Installer standalone)
+   └── Telecharge et installe tout automatiquement
+
+2. KnightOnline-Demo-x64.zip  (~335 MB - Package complet)
+   ├── KO-Demo-Launcher.exe   (11.7 MB - Launcher auto-update)
+   ├── KnightOnLine.exe       (4.3 MB - Client du jeu)
+   ├── Launch-Demo.bat        (Script batch simple)
+   ├── README.txt             (Instructions)
+   ├── Chr/                   (Assets personnages)
+   ├── Data/                  (Donnees du jeu)
+   ├── Obj/                   (Objets 3D)
+   ├── Sfx/                   (Effets sonores)
+   ├── Texture/               (Textures)
+   └── UI_US/                 (Interface utilisateur)
 ```
 
 ---
