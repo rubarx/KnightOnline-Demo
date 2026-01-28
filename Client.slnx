@@ -56,4 +56,7 @@
   <Project DefaultStartup="true" Path="src/Client/WarFare/WarFare.vcxproj" Id="ed8afb92-15ce-4537-a81c-d4120d31977c">
     <BuildDependency Project="src/Client/WarFare/WarFare.Core.vcxproj" />
   </Project>
+  <Project Path="src/Client/Option/Option.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
+    <BuildDependency Project="src/N3Base/N3Base_client.vcxproj" />
+  </Project>
 </Solution>

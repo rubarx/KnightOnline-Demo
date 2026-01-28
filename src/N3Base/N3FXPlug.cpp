@@ -62,10 +62,13 @@ bool CN3FXPlugPart::Load(File& file)
 	file.Read(&m_vOffsetPos, sizeof(m_vOffsetPos));
 	file.Read(&m_vOffsetDir, sizeof(m_vOffsetDir));
 
-	// Read unknown 4-byte field (appears in file format but not documented)
-	// Values observed: -1, 2, 15 - possibly a flag or internal ID
-	int nUnknownField = 0;
-	file.Read(&nUnknownField, sizeof(nUnknownField));
+	// Read two extra fields that appear in the file format but are not documented
+	// Field 1: float (values observed: 1.0f, 2.0f) - possibly scale or intensity
+	// Field 2: int (values observed: 2) - possibly a flag or type ID
+	float fUnknownFloat = 0.0f;
+	int   nUnknownInt   = 0;
+	file.Read(&fUnknownFloat, sizeof(fUnknownFloat));
+	file.Read(&nUnknownInt, sizeof(nUnknownInt));
 
 	return true;
 }

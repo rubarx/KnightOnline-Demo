@@ -57,6 +57,9 @@ jobs:
         New-Item -ItemType Directory -Force -Path "KnightOnline-Demo"
         Copy-Item "bin/Release-x64/KnightOnLine.exe" "KnightOnline-Demo/"
         Copy-Item "launcher/src/dist/KO-Demo-Launcher.exe" "KnightOnline-Demo/"
+        if (Test-Path "bin/Release-x64/Option.exe") {
+          Copy-Item "bin/Release-x64/Option.exe" "KnightOnline-Demo/"
+        }
         if (Test-Path "bin/Release-x64/*.dll") {
           Copy-Item "bin/Release-x64/*.dll" "KnightOnline-Demo/"
         }
