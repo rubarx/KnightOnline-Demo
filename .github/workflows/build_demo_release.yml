@@ -1,4 +1,4 @@
-# Build and package Knight Online Demo Client
+# Build and package Knight Online Demo Client with Auto-Update Launcher
 name: "Build Demo Release"
 
 on:
@@ -20,6 +20,22 @@ jobs:
       with:
         submodules: 'recursive'
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install PyInstaller
+      run: pip install pyinstaller
+
+    - name: Build Launcher executable
+      shell: pwsh
+      run: |
+        cd launcher/src
+        pyinstaller --onefile --windowed --name "KO-Demo-Launcher" demo_launcher.py
+        Write-Host "Launcher built successfully"
+        Get-Item "dist/KO-Demo-Launcher.exe" | Select-Object Name, Length
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
@@ -35,6 +51,9 @@ jobs:
 
         # Copy executable
         Copy-Item "bin/Release-x64/KnightOnLine.exe" "KnightOnline-Demo/"
+
+        # Copy auto-update launcher
+        Copy-Item "launcher/src/dist/KO-Demo-Launcher.exe" "KnightOnline-Demo/"
 
         # Copy required DLLs if any exist
         if (Test-Path "bin/Release-x64/*.dll") {
@@ -69,6 +88,10 @@ jobs:
         Knight Online Demo Client
         =========================
 
+        LAUNCHER (Recommended):
+        Run KO-Demo-Launcher.exe for automatic updates!
+        The launcher checks GitHub for new releases and updates automatically.
+
         Custom Features:
         - Town Button (G): Quick teleport to town
         - Auto-Pot (Insert): Automatic HP/MP potion usage
@@ -76,15 +99,16 @@ jobs:
         - Extended Hotkeys: 10 skill slots (1-0)
 
         How to Use:
-        1. Run Launch-Demo.bat or KnightOnLine.exe
+        1. Run KO-Demo-Launcher.exe (auto-updates) or KnightOnLine.exe (direct)
         2. Connect to your server
         3. Use the new hotkeys in-game
 
         Configuration:
-        - Auto-pot HP threshold: 50% (change with /autopot hp <percent>)
-        - Auto-pot MP threshold: 30% (change with /autopot mp <percent>)
+        - Auto-pot HP threshold: 50%
+        - Auto-pot MP threshold: 30%
 
-        Built with OpenKO - https://github.com/Open-KO/KnightOnline
+        GitHub: https://github.com/rubarx/KnightOnline-Demo
+        Built with OpenKO
         "@ | Out-File -FilePath "KnightOnline-Demo/README.txt" -Encoding UTF8
 
         # List package contents
@@ -113,6 +137,10 @@ jobs:
         body: |
           ## Knight Online Demo Client
 
+          ### Auto-Update Launcher
+          Use **KO-Demo-Launcher.exe** for automatic updates!
+          The launcher checks GitHub for new releases and downloads updates automatically.
+
           ### Custom Features
           - **Town Button** (G): Quick teleport to town with /town command
           - **Auto-Pot** (Insert): Automatic HP/MP potion usage
@@ -121,8 +149,8 @@ jobs:
 
           ### Installation
           1. Download and extract `KnightOnline-Demo-x64.zip`
-          2. Run `Launch-Demo.bat` or `KnightOnLine.exe`
-          3. Configure your server connection
+          2. Run `KO-Demo-Launcher.exe` (recommended) or `KnightOnLine.exe`
+          3. The launcher will notify you of future updates
 
           ### Requirements
           - Windows 10/11 (64-bit)
