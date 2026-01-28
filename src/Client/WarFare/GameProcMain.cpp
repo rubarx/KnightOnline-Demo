@@ -43,6 +43,9 @@
 #include "UIWareHouseDlg.h"
 #include "UINPCChangeEvent.h"
 #include "UIWarp.h"
+#include "UITownButtons.h"
+#include "AutoPotManager.h"
+#include "MacroManager.h"
 #include "UIInn.h"
 #include "UICreateClanName.h"
 #include "UITradeSellBBS.h"
@@ -130,6 +133,9 @@ CGameProcMain::CGameProcMain()     // r기본 생성자.. 각 변수의 역활�
 	m_pUIWareHouseDlg       = new CUIWareHouseDlg();
 	m_pUINpcChange          = new CUINPCChangeEvent();
 	m_pUIWarp               = new CUIWarp();
+	m_pUITownButtons        = new CUITownButtons();
+	m_pAutoPotManager       = new CAutoPotManager();
+	m_pMacroManager         = new CMacroManager();
 	m_pUIInn                = new CUIInn();
 	m_pUICreateClanName     = new CUICreateClanName();
 	m_pUITradeBBS           = new CUITradeSellBBS();
@@ -180,6 +186,9 @@ CGameProcMain::~CGameProcMain()
 	delete m_pUIWareHouseDlg;
 	delete m_pUINpcChange;
 	delete m_pUIWarp;
+	delete m_pUITownButtons;
+	delete m_pAutoPotManager;
+	delete m_pMacroManager;
 	delete m_pUIInn;
 	delete m_pUICreateClanName;
 	delete m_pUITradeBBS;
@@ -239,6 +248,7 @@ void CGameProcMain::ReleaseUIs()
 	m_pUIWareHouseDlg->Release();
 	m_pUINpcChange->Release();
 	m_pUIWarp->Release();
+	m_pUITownButtons->Release();
 	m_pUIInn->Release();
 	m_pUICreateClanName->Release();
 	m_pUIUpgradeSelect->Release();
@@ -509,6 +519,9 @@ void CGameProcMain::Tick()
 	this->ProcessLocalInput(dwMouseFlags);                 // 키보드나 마우스 입력은 UI 다음에 처리...
 
 	MsgSend_Continous();                                   // 일정 시간마다 움직임과 회전값, 공격등을 체크해서 패킷 만들어 보냄..
+
+	m_pAutoPotManager->Tick(CN3Base::TimeGet());           // Auto-pot system tick
+	m_pMacroManager->Tick(CN3Base::TimeGet());             // Skill macro system tick
 
 	s_pPlayer->Tick();                                     // 플레이어 틱(갱신)
 	s_pWorldMgr->Tick();
@@ -1365,6 +1378,26 @@ void CGameProcMain::ProcessLocalInput(uint32_t dwMouseFlags)
 
 		if (s_pLocalInput->IsKeyPress(KM_TOGGLE_MINIMAP))
 			CommandToggleUIMiniMap();
+
+		if (s_pLocalInput->IsKeyPress(KM_TOGGLE_TOWN_BUTTONS))
+			CommandToggleUITownButtons();
+
+		if (s_pLocalInput->IsKeyPress(KM_TOGGLE_AUTOPOT))
+			m_pAutoPotManager->ToggleEnabled();
+
+		// Macro hotkeys (Numpad 1-6)
+		if (s_pLocalInput->IsKeyPress(KM_MACRO1))
+			m_pMacroManager->ToggleMacro(0);
+		else if (s_pLocalInput->IsKeyPress(KM_MACRO2))
+			m_pMacroManager->ToggleMacro(1);
+		else if (s_pLocalInput->IsKeyPress(KM_MACRO3))
+			m_pMacroManager->ToggleMacro(2);
+		else if (s_pLocalInput->IsKeyPress(KM_MACRO4))
+			m_pMacroManager->ToggleMacro(3);
+		else if (s_pLocalInput->IsKeyPress(KM_MACRO5))
+			m_pMacroManager->ToggleMacro(4);
+		else if (s_pLocalInput->IsKeyPress(KM_MACRO6))
+			m_pMacroManager->ToggleMacro(5);
 
 		if (m_pUIHotKeyDlg != nullptr)
 		{
@@ -4020,6 +4053,17 @@ void CGameProcMain::InitUI()
 	m_pUIWarp->SetPos(iX, iY);
 	m_pUIWarp->SetStyle(UISTYLE_USER_MOVE_HIDE | UISTYLE_SHOW_ME_ALONE);
 
+	m_pUITownButtons->Init(s_pUIMgr);
+	if (m_pUITownButtons->LoadFromFile("UI_US\\co_townbuttons_us.uif"))
+	{
+		m_pUITownButtons->SetVisibleWithNoSound(false);
+		rc = m_pUITownButtons->GetRegion();
+		iX = (iW - (rc.right - rc.left)) / 2;
+		iY = (iH - (rc.bottom - rc.top)) / 2;
+		m_pUITownButtons->SetPos(iX, iY);
+		m_pUITownButtons->SetStyle(UISTYLE_USER_MOVE_HIDE);
+	}
+
 	m_pUIRepairTooltip->Init(s_pUIMgr);
 	m_pUIRepairTooltip->LoadFromFile(pTbl->szRepairTooltip);
 	m_pUIRepairTooltip->SetVisibleWithNoSound(false);
@@ -4857,6 +4901,32 @@ bool CGameProcMain::CommandToggleUISkillTree()
 bool CGameProcMain::CommandToggleUIMiniMap()
 {
 	return m_pUIStateBarAndMiniMap->ToggleMiniMap();
+}
+
+bool CGameProcMain::CommandToggleUITownButtons()
+{
+	if (!m_pUITownButtons->IsLoaded())
+	{
+		MsgOutput("Town buttons UI not loaded", 0xFFFF0000);
+		return false;
+	}
+
+	bool bNeedOpen = !m_pUITownButtons->IsVisible();
+
+	if (m_pSubProcPerTrade->m_ePerTradeState != PER_TRADE_STATE_NONE)
+		return bNeedOpen;
+
+	if (bNeedOpen)
+	{
+		s_pUIMgr->SetFocusedUI(m_pUITownButtons);
+		m_pUITownButtons->SetVisible(true);
+	}
+	else
+	{
+		m_pUITownButtons->SetVisible(false);
+	}
+
+	return bNeedOpen;
 }
 
 bool CGameProcMain::CommandToggleCmdList()

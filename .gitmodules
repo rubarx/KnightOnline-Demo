@@ -4,7 +4,7 @@
 	shallow = true
 [submodule "assets/Client"]
 	path = assets/Client
-	url = https://github.com/Open-KO/ko-client-assets
+	url = https://github.com/rubarx/ko-client-assets-demo
 	branch = openko-1298
 	shallow = true
 [submodule "deps/zlib"]

@@ -58,6 +58,13 @@ enum eKeyMap : uint8_t
 	KM_HOTKEY6               = DIK_6,
 	KM_HOTKEY7               = DIK_7,
 	KM_HOTKEY8               = DIK_8,
+	KM_MACRO1                = DIK_NUMPAD1,
+	KM_MACRO2                = DIK_NUMPAD2,
+	KM_MACRO3                = DIK_NUMPAD3,
+	KM_MACRO4                = DIK_NUMPAD4,
+	KM_MACRO5                = DIK_NUMPAD5,
+	KM_MACRO6                = DIK_NUMPAD6,
+	KM_TOGGLE_AUTOPOT        = DIK_INSERT, // Toggle auto-pot system
 	KM_TOGGLE_RUN            = DIK_T,
 	KM_TOGGLE_MOVE_CONTINOUS = DIK_E,
 	KM_TOGGLE_ATTACK         = DIK_R,
@@ -85,7 +92,8 @@ enum eKeyMap : uint8_t
 	KM_SKILL_PAGE_5          = DIK_F5,
 	KM_SKILL_PAGE_6          = DIK_F6,
 	KM_SKILL_PAGE_7          = DIK_F7,
-	KM_SKILL_PAGE_8          = DIK_F8
+	KM_SKILL_PAGE_8          = DIK_F8,
+	KM_TOGGLE_TOWN_BUTTONS   = DIK_G   // Quick teleport to towns
 };
 
 enum e_PlayerType : uint8_t

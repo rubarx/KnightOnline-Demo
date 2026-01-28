@@ -73,6 +73,9 @@ public:
 
 	class CUINPCChangeEvent* m_pUINpcChange;
 	class CUIWarp* m_pUIWarp;
+	class CUITownButtons* m_pUITownButtons; // Quick teleport to towns
+	class CAutoPotManager* m_pAutoPotManager; // Automatic potion usage system
+	class CMacroManager* m_pMacroManager;     // Skill macro system
 	class CWarMessage* m_pWarMessage; // 전쟁관련 메시지
 	class CLightMgr* m_pLightMgr;
 
@@ -250,6 +253,7 @@ public:
 	bool CommandToggleUIMiniMap();
 	bool CommandToggleCmdList();
 	bool CommandToggleLevelGuide();
+	bool CommandToggleUITownButtons(); // Toggle town teleport buttons UI
 	bool OpenCmdEdit(const std::string& msg);
 
 	void CommandMove(e_MoveDirection eMD, bool bStartOrEnd); // 움직이는 방향(전후진, 멈춤), 움직이기 시작하는가?
