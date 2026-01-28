@@ -11,8 +11,8 @@
 #include "MagicSkillMng.h"
 #include "GameBase.h"
 
-// Item class for potions
-constexpr uint8_t ITEM_CLASS_POTION = 97;
+// Item class for potions (ITEM_CLASS_POTION already defined in ItemDef.h)
+// constexpr uint8_t ITEM_CLASS_POTION = 97;
 
 // HP potion item ID ranges (from Item_Org_us.tbl)
 // 389010000 - Holy water (HP Recovery)
@@ -146,9 +146,9 @@ int CAutoPotManager::GetCurrentPercentage(e_PotionType eType) const
     }
     else if (eType == POTION_MP)
     {
-        if (pPlayer->m_InfoBase.iMSPMax <= 0)
+        if (pPlayer->m_InfoBase.iMPMax <= 0)
             return 100;
-        return (pPlayer->m_InfoBase.iMSP * 100) / pPlayer->m_InfoBase.iMSPMax;
+        return (pPlayer->m_InfoBase.iMP * 100) / pPlayer->m_InfoBase.iMPMax;
     }
 
     return 100;
