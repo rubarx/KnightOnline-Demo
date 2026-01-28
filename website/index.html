@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knight Online Demo - Download</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a12;
+            --bg-card: #12121f;
+            --bg-hover: #1a1a2e;
+            --gold: #d4af37;
+            --gold-light: #f0d060;
+            --green: #00cc66;
+            --blue: #3366cc;
+            --red: #cc3333;
+            --text: #e8e8f0;
+            --text-dim: #888899;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at top, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(51, 102, 204, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .logo h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+        }
+
+        .logo .knight {
+            color: var(--gold);
+        }
+
+        .logo .online {
+            color: var(--text);
+        }
+
+        .logo .demo {
+            display: inline-block;
+            background: var(--green);
+            color: var(--bg-dark);
+            font-size: 1rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-left: 10px;
+            vertical-align: middle;
+            font-weight: 600;
+        }
+
+        .tagline {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        /* Download Section */
+        .download-section {
+            padding: 40px 0;
+        }
+
+        .download-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .download-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .download-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+        }
+
+        .download-card.recommended {
+            border-color: var(--gold);
+            position: relative;
+        }
+
+        .download-card.recommended::before {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -12px;
+            left: 30px;
+            background: var(--gold);
+            color: var(--bg-dark);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-hover);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-title h3 {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .card-title span {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .card-description {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .card-size {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: var(--bg-hover);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .size-item {
+            text-align: center;
+        }
+
+        .size-item .value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .size-item .label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: var(--bg-dark);
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .download-btn.secondary {
+            background: var(--bg-hover);
+            color: var(--text);
+            border: 1px solid var(--gold);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 60px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h4 {
+            color: var(--gold);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .feature-card p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .feature-key {
+            display: inline-block;
+            background: var(--bg-hover);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Requirements */
+        .requirements-section {
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .requirements-box {
+            display: inline-block;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px 50px;
+            text-align: left;
+        }
+
+        .requirements-box h3 {
+            color: var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .requirements-box ul {
+            list-style: none;
+        }
+
+        .requirements-box li {
+            color: var(--text-dim);
+            padding: 5px 0;
+        }
+
+        .requirements-box li::before {
+            content: '>';
+            color: var(--gold);
+            margin-right: 10px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+
+        .copyright {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Release info */
+        #release-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: var(--bg-card);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .version-badge .version {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 2rem;
+            }
+
+            .download-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>
+                    <span class="knight">KNIGHT</span>
+                    <span class="online">ONLINE</span>
+                    <span class="demo">DEMO</span>
+                </h1>
+            </div>
+            <p class="tagline">Custom features showcase - Town Button, Auto-Pot, Skill Macros</p>
+        </header>
+
+        <section class="download-section">
+            <div id="release-info">
+                <span class="version-badge">
+                    Latest: <span class="version" id="latest-version">Loading...</span>
+                </span>
+            </div>
+
+            <div class="download-cards">
+                <!-- Installer Card -->
+                <div class="download-card recommended">
+                    <div class="card-header">
+                        <div class="card-icon">&#128229;</div>
+                        <div class="card-title">
+                            <h3>Standalone Installer</h3>
+                            <span>KO-Demo-Setup.exe</span>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Small installer that downloads and installs everything automatically.
+                        Creates desktop shortcut and handles all setup for you.
+                    </p>
+                    <div class="card-size">
+                        <div class="size-item">
+                            <div class="value">~12 MB</div>
+                            <div class="label">Download</div>
+                        </div>
+                        <div class="size-item">
+                            <div class="value">~400 MB</div>
+                            <div class="label">Installed</div>
+                        </div>
+                    </div>
+                    <a href="#" id="installer-download" class="download-btn">
+                        &#11015; Download Installer
+                    </a>
+                </div>
+
+                <!-- Full Package Card -->
+                <div class="download-card">
+                    <div class="card-header">
+                        <div class="card-icon">&#128230;</div>
+                        <div class="card-title">
+                            <h3>Full Package</h3>
+                            <span>KnightOnline-Demo-x64.zip</span>
+                        </div>
+                    </div>
+                    <p class="card-description">
+                        Complete package with game, launcher and all assets included.
+                        Just extract and play - includes auto-update launcher.
+                    </p>
+                    <div class="card-size">
+                        <div class="size-item">
+                            <div class="value">~335 MB</div>
+                            <div class="label">Download</div>
+                        </div>
+                        <div class="size-item">
+                            <div class="value">~400 MB</div>
+                            <div class="label">Extracted</div>
+                        </div>
+                    </div>
+                    <a href="#" id="package-download" class="download-btn secondary">
+                        &#11015; Download ZIP
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features-section">
+            <h2 class="section-title">Custom Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#127961;</div>
+                    <h4>Town Button</h4>
+                    <p>Quick teleport to town with a single key press. No need to type commands.</p>
+                    <span class="feature-key">G</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#129514;</div>
+                    <h4>Auto-Pot</h4>
+                    <p>Automatic HP/MP potion usage when health drops below threshold.</p>
+                    <span class="feature-key">Insert</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9889;</div>
+                    <h4>Skill Macros</h4>
+                    <p>Pre-configured skill combinations on numpad keys for fast combat.</p>
+                    <span class="feature-key">Numpad 1-6</span>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127918;</div>
+                    <h4>Extended Hotkeys</h4>
+                    <p>10 skill slots instead of 8. Use keys 1-0 for more skills.</p>
+                    <span class="feature-key">1-0</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="requirements-section">
+            <div class="requirements-box">
+                <h3>System Requirements</h3>
+                <ul>
+                    <li>Windows 10/11 (64-bit)</li>
+                    <li>DirectX 9.0c</li>
+                    <li>400 MB free disk space</li>
+                    <li>Internet connection for updates</li>
+                </ul>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-links">
+                <a href="https://github.com/rubarx/KnightOnline-Demo" target="_blank">GitHub</a>
+                <a href="https://github.com/rubarx/KnightOnline-Demo/releases" target="_blank">All Releases</a>
+                <a href="https://github.com/Open-KO/KnightOnline" target="_blank">OpenKO Project</a>
+            </div>
+            <p class="copyright">Built with OpenKO - Open Source Knight Online</p>
+        </footer>
+    </div>
+
+    <script>
+        // Fetch latest release from GitHub API
+        async function fetchLatestRelease() {
+            try {
+                const response = await fetch('https://api.github.com/repos/rubarx/KnightOnline-Demo/releases/latest');
+                const data = await response.json();
+
+                // Update version display
+                document.getElementById('latest-version').textContent = data.tag_name;
+
+                // Find assets
+                let installerUrl = null;
+                let packageUrl = null;
+
+                for (const asset of data.assets) {
+                    if (asset.name.includes('Setup') && asset.name.endsWith('.exe')) {
+                        installerUrl = asset.browser_download_url;
+                    } else if (asset.name.endsWith('.zip')) {
+                        packageUrl = asset.browser_download_url;
+                    }
+                }
+
+                // Update download links
+                if (installerUrl) {
+                    document.getElementById('installer-download').href = installerUrl;
+                } else {
+                    // Fallback to release page
+                    document.getElementById('installer-download').href = data.html_url;
+                }
+
+                if (packageUrl) {
+                    document.getElementById('package-download').href = packageUrl;
+                } else {
+                    document.getElementById('package-download').href = data.html_url;
+                }
+
+            } catch (error) {
+                console.error('Error fetching release:', error);
+                document.getElementById('latest-version').textContent = 'v1.1.0-demo';
+                // Fallback links
+                document.getElementById('installer-download').href = 'https://github.com/rubarx/KnightOnline-Demo/releases/latest';
+                document.getElementById('package-download').href = 'https://github.com/rubarx/KnightOnline-Demo/releases/latest';
+            }
+        }
+
+        // Fetch on load
+        fetchLatestRelease();
+    </script>
+</body>
+</html>

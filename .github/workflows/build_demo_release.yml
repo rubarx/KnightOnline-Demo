@@ -36,6 +36,14 @@ jobs:
         Write-Host "Launcher built successfully"
         Get-Item "dist/KO-Demo-Launcher.exe" | Select-Object Name, Length
 
+    - name: Build Standalone Installer
+      shell: pwsh
+      run: |
+        cd installer
+        pyinstaller --onefile --windowed --name "KO-Demo-Setup" KO-Demo-Installer.py
+        Write-Host "Installer built successfully"
+        Get-Item "dist/KO-Demo-Setup.exe" | Select-Object Name, Length
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
@@ -129,17 +137,26 @@ jobs:
         path: KnightOnline-Demo-x64.zip
         retention-days: 30
 
+    - name: Upload Standalone Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: KO-Demo-Setup
+        path: installer/dist/KO-Demo-Setup.exe
+        retention-days: 30
+
     - name: Create Release (on tag)
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: KnightOnline-Demo-x64.zip
+        files: |
+          KnightOnline-Demo-x64.zip
+          installer/dist/KO-Demo-Setup.exe
         body: |
           ## Knight Online Demo Client
 
-          ### Auto-Update Launcher
-          Use **KO-Demo-Launcher.exe** for automatic updates!
-          The launcher checks GitHub for new releases and downloads updates automatically.
+          ### Downloads
+          - **KO-Demo-Setup.exe** (12 MB) - Standalone installer, downloads everything automatically
+          - **KnightOnline-Demo-x64.zip** (335 MB) - Full package with launcher included
 
           ### Custom Features
           - **Town Button** (G): Quick teleport to town with /town command
@@ -148,9 +165,14 @@ jobs:
           - **Extended Hotkeys**: 10 skill slots (keys 1-0)
 
           ### Installation
+          **Option 1 - Installer (Recommended):**
+          1. Download `KO-Demo-Setup.exe`
+          2. Run it and choose install location
+          3. The installer downloads and sets up everything
+
+          **Option 2 - Manual:**
           1. Download and extract `KnightOnline-Demo-x64.zip`
-          2. Run `KO-Demo-Launcher.exe` (recommended) or `KnightOnLine.exe`
-          3. The launcher will notify you of future updates
+          2. Run `KO-Demo-Launcher.exe`
 
           ### Requirements
           - Windows 10/11 (64-bit)
