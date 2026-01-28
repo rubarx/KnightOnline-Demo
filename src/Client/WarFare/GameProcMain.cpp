@@ -4905,28 +4905,21 @@ bool CGameProcMain::CommandToggleUIMiniMap()
 
 bool CGameProcMain::CommandToggleUITownButtons()
 {
-	if (!m_pUITownButtons->IsLoaded())
+	// Direct execution of /town command when G is pressed
+	// Note: UI-based button disabled due to missing base textures in open-source assets
+
+	// Check if we're in a trade to prevent accidental teleport
+	if (m_pSubProcPerTrade->m_ePerTradeState != PER_TRADE_STATE_NONE)
 	{
-		MsgOutput("Town buttons UI not loaded", 0xFFFF0000);
+		MsgOutput("Cannot teleport during trade", 0xFFFFFF00);
 		return false;
 	}
 
-	bool bNeedOpen = !m_pUITownButtons->IsVisible();
+	// Execute the /town command directly
+	ParseChattingCommand("/town");
+	MsgOutput("Teleporting to town...", 0xFF00FF00);
 
-	if (m_pSubProcPerTrade->m_ePerTradeState != PER_TRADE_STATE_NONE)
-		return bNeedOpen;
-
-	if (bNeedOpen)
-	{
-		s_pUIMgr->SetFocusedUI(m_pUITownButtons);
-		m_pUITownButtons->SetVisible(true);
-	}
-	else
-	{
-		m_pUITownButtons->SetVisible(false);
-	}
-
-	return bNeedOpen;
+	return true;
 }
 
 bool CGameProcMain::CommandToggleCmdList()

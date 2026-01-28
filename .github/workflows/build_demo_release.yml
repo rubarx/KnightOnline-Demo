@@ -73,51 +73,121 @@ jobs:
           Copy-Item -Recurse "assets/Client/*" "KnightOnline-Demo/"
         }
 
+        # Create Server.ini with configurable server IP
+        @"
+[Server]
+Count=1
+IP0=game.ko-demo.net
+
+[Version]
+Files=1299
+
+[Join]
+Registration site=https://github.com/rubarx/KnightOnline-Demo
+"@ | Out-File -FilePath "KnightOnline-Demo/Server.ini" -Encoding ASCII
+
+        # Create Options.ini default config
+        @"
+[Video]
+Width=1024
+Height=768
+Windowed=0
+ColorDepth=32
+TextureLevel=0
+TexQuality=1
+TextureLOD=1
+Fog=0
+ViewDist=1200.000000
+MipMapping=1
+AlphaFog=0
+NearPlane=0.300000
+FarPlane=1500.000000
+LightFOV=50.000000
+LightBrightness=100
+
+[Sound]
+SndEnable=1
+SndVolume=100
+MscEnable=1
+MscVolume=100
+3DSound=1
+DuplicateEnable=1
+
+[System]
+Language=0
+AutoShutdown=0
+Chat=11111111
+MouseSpeed=50
+ChatFilter=0
+SkillEffect=1
+"@ | Out-File -FilePath "KnightOnline-Demo/Options.ini" -Encoding ASCII
+
         # Create simple launcher batch file
         @"
-        @echo off
-        title Knight Online Demo
-        echo ==========================================
-        echo   Knight Online Demo Client
-        echo   Features: Town Button, Auto-Pot, Macros
-        echo ==========================================
-        echo.
-        echo Controls:
-        echo   G - Toggle Town Teleport
-        echo   Insert - Toggle Auto-Pot
-        echo   Numpad 1-6 - Skill Macros
-        echo.
-        echo Starting game...
-        start "" "KnightOnLine.exe"
-        "@ | Out-File -FilePath "KnightOnline-Demo/Launch-Demo.bat" -Encoding ASCII
+@echo off
+title Knight Online Demo
+echo ==========================================
+echo   Knight Online Demo Client
+echo   Custom Features for Demo Version
+echo ==========================================
+echo.
+echo CONTROLS:
+echo   G          - Instant Town Teleport
+echo   Insert     - Toggle Auto-Pot (HP/MP)
+echo   Numpad 1-6 - Skill Macros
+echo   1-0        - 10 Skill Slots
+echo.
+echo AUTO-POT SETTINGS:
+echo   HP Threshold: 50%%
+echo   MP Threshold: 30%%
+echo   Cooldown: 1 second
+echo.
+echo Starting game...
+start "" "KnightOnLine.exe"
+"@ | Out-File -FilePath "KnightOnline-Demo/Launch-Demo.bat" -Encoding ASCII
 
         # Create README
         @"
-        Knight Online Demo Client
-        =========================
+Knight Online Demo Client
+=========================
 
-        LAUNCHER (Recommended):
-        Run KO-Demo-Launcher.exe for automatic updates!
-        The launcher checks GitHub for new releases and updates automatically.
+INSTALLATION:
+1. Extract to any folder
+2. Run KO-Demo-Launcher.exe (recommended, auto-updates)
+   OR run KnightOnLine.exe directly
 
-        Custom Features:
-        - Town Button (G): Quick teleport to town
-        - Auto-Pot (Insert): Automatic HP/MP potion usage
-        - Skill Macros (Numpad 1-6): Pre-configured skill combos
-        - Extended Hotkeys: 10 skill slots (1-0)
+CUSTOM FEATURES:
 
-        How to Use:
-        1. Run KO-Demo-Launcher.exe (auto-updates) or KnightOnLine.exe (direct)
-        2. Connect to your server
-        3. Use the new hotkeys in-game
+[Town Teleport - Press G]
+Instantly teleports you to town via /town command.
+Works anywhere (unless in trade).
 
-        Configuration:
-        - Auto-pot HP threshold: 50%
-        - Auto-pot MP threshold: 30%
+[Auto-Pot System - Press Insert]
+Automatically uses HP/MP potions when low.
+- HP Threshold: 50% (uses potion when HP drops below 50%)
+- MP Threshold: 30% (uses potion when MP drops below 30%)
+- Cooldown: 1 second between uses
+- Supports all standard potions by ID and name detection
 
-        GitHub: https://github.com/rubarx/KnightOnline-Demo
-        Built with OpenKO
-        "@ | Out-File -FilePath "KnightOnline-Demo/README.txt" -Encoding UTF8
+[Skill Macros - Numpad 1-6]
+Pre-configured skill combos:
+- Numpad 1: Mage Ice Combo
+- Numpad 2: Mage Fire Combo
+- Numpad 3: Mage Lightning Combo
+- Numpad 4: Archer Burst Combo
+- Numpad 5: Rogue Assassination Combo
+- Numpad 6: Warrior Basic Combo
+
+[Extended Hotkeys]
+10 skill slots (keys 1-0) instead of standard 8.
+
+SERVER CONFIGURATION:
+Edit Server.ini to change the server IP:
+- IP0 = your server address
+
+GitHub: https://github.com/rubarx/KnightOnline-Demo
+Built with OpenKO (Open Source Knight Online)
+"@ | Out-File -FilePath "KnightOnline-Demo/README.txt" -Encoding UTF8
 
         # List package contents
         Write-Host "Package contents:"

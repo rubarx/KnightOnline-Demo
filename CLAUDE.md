@@ -7,7 +7,7 @@ Ce projet est compile via GitHub Actions et distribue avec un launcher auto-upda
 
 **Repository** : https://github.com/rubarx/KnightOnline-Demo
 **Branche principale** : `demo`
-**Derniere release** : v1.2.0-demo
+**Derniere release** : v1.3.0-demo
 **Page de telechargement** : `website/index.html` (a deployer sur ton domaine)
 
 ---
@@ -280,6 +280,18 @@ git submodule update --init --recursive
 ### Erreur C2039 (iMSPMax not member)
 - **Cause** : Mauvais nom de champ
 - **Solution** : Remplacement de iMSP/iMSPMax par iMP/iMPMax
+
+### Textures UI manquantes (v1.3.0-demo)
+- **Cause** : Les textures UI de base (ui_message_us.dxt, ui_warfare_us.dxt, etc.) ne sont pas incluses dans les assets open-source
+- **Impact** : UITownButtons ne pouvait pas s'afficher car les textures n'existaient pas
+- **Solution** :
+  - La touche G execute maintenant directement `/town` sans UI
+  - Suppression de la dependance sur UITownButtons
+  - Message de confirmation affiche dans le chat
+
+### Server.ini et Options.ini manquants (v1.3.0-demo)
+- **Cause** : Server.ini.default non copie dans le package
+- **Solution** : Workflow cree maintenant Server.ini et Options.ini automatiquement
 
 ---
 
