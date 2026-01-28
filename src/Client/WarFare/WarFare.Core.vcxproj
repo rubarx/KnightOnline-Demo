@@ -217,6 +217,9 @@
     <ClCompile Include="UIVarious.cpp" />
     <ClCompile Include="UIWareHouseDlg.cpp" />
     <ClCompile Include="UIWarp.cpp" />
+    <ClCompile Include="UITownButtons.cpp" />
+    <ClCompile Include="AutoPotManager.cpp" />
+    <ClCompile Include="MacroManager.cpp" />
     <ClCompile Include="WarMessage.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -327,6 +330,9 @@
     <ClInclude Include="UIVarious.h" />
     <ClInclude Include="UIWareHouseDlg.h" />
     <ClInclude Include="UIWarp.h" />
+    <ClInclude Include="UITownButtons.h" />
+    <ClInclude Include="AutoPotManager.h" />
+    <ClInclude Include="MacroManager.h" />
     <ClInclude Include="warfare_config.h" />
     <ClInclude Include="WarMessage.h" />
   </ItemGroup>
