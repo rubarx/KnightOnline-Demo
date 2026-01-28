@@ -1,0 +1,129 @@
+# Build and package Knight Online Demo Client
+name: "Build Demo Release"
+
+on:
+  push:
+    branches:
+    - demo
+    tags:
+    - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: "Build Demo Client (Release x64)"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build client (Release x64)
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: msbuild /m /p:Configuration="Release" /p:Platform="x64" Client.slnx
+
+    - name: Create Demo Package
+      shell: pwsh
+      run: |
+        # Create package directory
+        New-Item -ItemType Directory -Force -Path "KnightOnline-Demo"
+
+        # Copy executable
+        Copy-Item "bin/Release-x64/KnightOnLine.exe" "KnightOnline-Demo/"
+
+        # Copy required DLLs if any exist
+        if (Test-Path "bin/Release-x64/*.dll") {
+          Copy-Item "bin/Release-x64/*.dll" "KnightOnline-Demo/"
+        }
+
+        # Copy client assets
+        if (Test-Path "assets/Client") {
+          Copy-Item -Recurse "assets/Client/*" "KnightOnline-Demo/"
+        }
+
+        # Create simple launcher batch file
+        @"
+        @echo off
+        title Knight Online Demo
+        echo ==========================================
+        echo   Knight Online Demo Client
+        echo   Features: Town Button, Auto-Pot, Macros
+        echo ==========================================
+        echo.
+        echo Controls:
+        echo   G - Toggle Town Teleport
+        echo   Insert - Toggle Auto-Pot
+        echo   Numpad 1-6 - Skill Macros
+        echo.
+        echo Starting game...
+        start "" "KnightOnLine.exe"
+        "@ | Out-File -FilePath "KnightOnline-Demo/Launch-Demo.bat" -Encoding ASCII
+
+        # Create README
+        @"
+        Knight Online Demo Client
+        =========================
+
+        Custom Features:
+        - Town Button (G): Quick teleport to town
+        - Auto-Pot (Insert): Automatic HP/MP potion usage
+        - Skill Macros (Numpad 1-6): Pre-configured skill combos
+        - Extended Hotkeys: 10 skill slots (1-0)
+
+        How to Use:
+        1. Run Launch-Demo.bat or KnightOnLine.exe
+        2. Connect to your server
+        3. Use the new hotkeys in-game
+
+        Configuration:
+        - Auto-pot HP threshold: 50% (change with /autopot hp <percent>)
+        - Auto-pot MP threshold: 30% (change with /autopot mp <percent>)
+
+        Built with OpenKO - https://github.com/Open-KO/KnightOnline
+        "@ | Out-File -FilePath "KnightOnline-Demo/README.txt" -Encoding UTF8
+
+        # List package contents
+        Write-Host "Package contents:"
+        Get-ChildItem -Recurse "KnightOnline-Demo" | Select-Object FullName
+
+    - name: Create ZIP Archive
+      shell: pwsh
+      run: |
+        Compress-Archive -Path "KnightOnline-Demo/*" -DestinationPath "KnightOnline-Demo-x64.zip" -Force
+        Write-Host "Created: KnightOnline-Demo-x64.zip"
+        Get-Item "KnightOnline-Demo-x64.zip" | Select-Object Name, Length
+
+    - name: Upload Demo Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: KnightOnline-Demo-x64
+        path: KnightOnline-Demo-x64.zip
+        retention-days: 30
+
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: KnightOnline-Demo-x64.zip
+        body: |
+          ## Knight Online Demo Client
+
+          ### Custom Features
+          - **Town Button** (G): Quick teleport to town with /town command
+          - **Auto-Pot** (Insert): Automatic HP/MP potion usage
+          - **Skill Macros** (Numpad 1-6): Pre-configured skill combos
+          - **Extended Hotkeys**: 10 skill slots (keys 1-0)
+
+          ### Installation
+          1. Download and extract `KnightOnline-Demo-x64.zip`
+          2. Run `Launch-Demo.bat` or `KnightOnLine.exe`
+          3. Configure your server connection
+
+          ### Requirements
+          - Windows 10/11 (64-bit)
+          - DirectX 9.0c
