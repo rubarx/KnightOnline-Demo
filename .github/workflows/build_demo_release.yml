@@ -70,13 +70,13 @@ jobs:
         $serverIni = @"
         [Server]
         Count=1
-        IP0=game.ko-demo.net
+        IP0=127.0.0.1
 
         [Version]
         Files=1299
 
         [Join]
-        Registration site=https://github.com/rubarx/KnightOnline-Demo
+        Registration site=https://github.com/Open-KO/KnightOnline
         "@
         $serverIni | Out-File -FilePath "KnightOnline-Demo/Server.ini" -Encoding ASCII
 
