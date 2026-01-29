@@ -32,11 +32,12 @@ except ImportError:
 
 CONFIG = {
     "name": "Knight Online Demo",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "github_repo": "rubarx/KnightOnline-Demo",
     "github_api": "https://api.github.com/repos/rubarx/KnightOnline-Demo/releases/latest",
+    "patches_api": "https://ko.ai-nexus.net/downloads/patches.json",
     "game_exe": "KnightOnLine.exe",
-    "server_ip": "127.0.0.1",  # Default local, can be changed
+    "server_ip": "game.ai-nexus.net",
     "server_port": 15100,
 }
 
@@ -113,6 +114,59 @@ class GitHubAPI:
         }
 
 # ============================================================================
+# PATCH API - Download only modified files
+# ============================================================================
+
+class PatchAPI:
+    @staticmethod
+    def get_patches():
+        """Fetch patches manifest from server"""
+        try:
+            ctx = get_ssl_context()
+            req = urllib.request.Request(
+                CONFIG["patches_api"],
+                headers={"User-Agent": f"KODemo-Launcher/{CONFIG['version']}"}
+            )
+            with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+                return json.loads(r.read().decode('utf-8'))
+        except Exception as e:
+            print(f"Patch API error: {e}")
+            return None
+
+    @staticmethod
+    def get_pending_patches(local_patch_id):
+        """Get list of patches newer than local version"""
+        patches_data = PatchAPI.get_patches()
+        if not patches_data:
+            return []
+
+        pending = []
+        for patch in patches_data.get("patches", []):
+            if patch.get("id", 0) > local_patch_id:
+                pending.append(patch)
+        return sorted(pending, key=lambda p: p.get("id", 0))
+
+    @staticmethod
+    def download_file(url, dest_path):
+        """Download a single file"""
+        try:
+            ctx = get_ssl_context()
+            req = urllib.request.Request(url, headers={
+                "User-Agent": f"KODemo-Launcher/{CONFIG['version']}"
+            })
+
+            # Ensure parent directory exists
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            with urllib.request.urlopen(req, timeout=60, context=ctx) as response:
+                with open(dest_path, 'wb') as f:
+                    f.write(response.read())
+            return True
+        except Exception as e:
+            print(f"Download error for {url}: {e}")
+            return False
+
+# ============================================================================
 # LAUNCHER
 # ============================================================================
 
@@ -131,6 +185,8 @@ class Launcher:
         self.local_version = None
         self.remote_release = None
         self.update_available = False
+        self.patches_available = []
+        self.local_patch_id = 0
 
         # Center window
         self.root.update_idletasks()
@@ -150,6 +206,7 @@ class Launcher:
         # Check game and updates
         self.root.after(100, self.check_game)
         self.root.after(300, self.check_for_updates)
+        self.root.after(500, self.check_for_patches)
 
     def get_install_path(self):
         current = Path(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -406,6 +463,102 @@ Extended Hotkeys (1-0) - 10 skill slots"""
         self.status_label.config(text="GitHub unavailable", fg=C.RED)
         self.latest_status.config(text="Offline", fg=C.RED)
         self.notes_label.config(text="Could not connect to GitHub.\n\nCheck your internet connection.")
+
+    def check_for_patches(self):
+        """Check for incremental patches (smaller updates)"""
+        game_exe = self.install_path / CONFIG["game_exe"]
+        if not game_exe.exists():
+            return  # No game installed, skip patch check
+
+        def fetch():
+            # Get local patch ID
+            if self.local_version:
+                self.local_patch_id = self.local_version.get("patch_id", 0)
+
+            patches = PatchAPI.get_pending_patches(self.local_patch_id)
+            if patches:
+                self.root.after(0, lambda: self.process_patches(patches))
+
+        threading.Thread(target=fetch, daemon=True).start()
+
+    def process_patches(self, patches):
+        """Process available patches"""
+        self.patches_available = patches
+
+        # Count total files
+        total_files = sum(len(p.get("files", [])) for p in patches)
+        total_size = sum(f.get("size", 0) for p in patches for f in p.get("files", []))
+        size_kb = total_size / 1024
+
+        if total_files > 0:
+            # Show patch update instead of full update if no full update
+            if not self.update_available:
+                desc = patches[-1].get("description", "New content")
+                self.update_label.config(text=f"Patch: {desc} ({total_files} files, {size_kb:.0f}KB)")
+                self.update_btn.config(command=self.apply_patches)
+                self.update_frame.pack(fill="x", pady=(0, 12))
+                self.version_status.config(text=f"Patch available", fg=C.ORANGE)
+
+    def apply_patches(self):
+        """Download and apply incremental patches"""
+        if not self.patches_available:
+            return
+
+        self.downloading = True
+        self.update_frame.pack_forget()
+        self.play_btn.config(text="...", state="disabled")
+        self.progress_frame.pack(fill="x", pady=(0, 12))
+        self.progress_text.config(text="Downloading patches...")
+        self.progress_bar["value"] = 0
+
+        def download():
+            try:
+                # Collect all files from all patches
+                all_files = []
+                for patch in self.patches_available:
+                    for f in patch.get("files", []):
+                        all_files.append((f, patch.get("id", 0)))
+
+                total = len(all_files)
+                for i, (file_info, patch_id) in enumerate(all_files):
+                    url = file_info.get("url", "")
+                    rel_path = file_info.get("path", "")
+
+                    if not url or not rel_path:
+                        continue
+
+                    dest = self.install_path / rel_path
+                    self.root.after(0, lambda p=rel_path: self.progress_text.config(
+                        text=f"Downloading: {p}"))
+
+                    success = PatchAPI.download_file(url, dest)
+                    if success:
+                        pct = ((i + 1) / total) * 100
+                        self.root.after(0, lambda p=pct: self.progress_bar.configure(value=p))
+
+                # Update local version with latest patch ID
+                latest_patch_id = max(p.get("id", 0) for p in self.patches_available)
+                if self.local_version:
+                    self.local_version["patch_id"] = latest_patch_id
+                else:
+                    self.local_version = {"version": "1.0.0", "patch_id": latest_patch_id}
+
+                self.save_local_version(self.local_version)
+                self.root.after(0, self.patch_complete)
+
+            except Exception as e:
+                self.root.after(0, lambda: self.download_error(str(e)))
+
+        threading.Thread(target=download, daemon=True).start()
+
+    def patch_complete(self):
+        """Called when patch download is complete"""
+        self.downloading = False
+        self.patches_available = []
+        self.progress_frame.pack_forget()
+        self.play_btn.config(text="PLAY", state="normal")
+        self.version_status.config(text="Up to date", fg=C.GREEN)
+        self.status_label.config(text="Patches applied!", fg=C.GREEN)
 
     def on_play(self):
         if self.downloading:
