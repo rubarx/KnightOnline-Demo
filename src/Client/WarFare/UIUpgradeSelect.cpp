@@ -41,7 +41,7 @@ bool CUIUpgradeSelect::ReceiveMessage(CN3UIBase* pSender, uint32_t dwMsg)
 		if (pSender == m_pBtn_Upgrade_1)
 		{
 #if 1
-			CGameProcedure::MessageBoxPost("CUIItemUpgrade needs to be implemented.", "Not implemented", MB_OK);
+			CGameProcedure::MessageBoxPost("Item Upgrade is not available in the Demo version.", "Demo", MB_OK);
 #else
 			CUIItemUpgrade* pUIItemUpgrade = CGameProcedure::s_pProcMain->m_pUIItemUpgrade;
 			if (pUIItemUpgrade != nullptr)
@@ -56,7 +56,7 @@ bool CUIUpgradeSelect::ReceiveMessage(CN3UIBase* pSender, uint32_t dwMsg)
 		else if (pSender == m_pBtn_Upgrade_2)
 		{
 #if 1
-			CGameProcedure::MessageBoxPost("CUIRingUpgrade needs to be implemented.", "Not implemented", MB_OK);
+			CGameProcedure::MessageBoxPost("Accessory Upgrade is not available in the Demo version.", "Demo", MB_OK);
 #else
 			CUIRingUpgrade* pUIRingUpgrade = CGameProcedure::s_pProcMain->m_pUIRingUpgrade;
 			if (pUIRingUpgrade != nullptr)
