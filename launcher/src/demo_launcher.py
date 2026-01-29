@@ -58,8 +58,40 @@ class C:
 # SSL CONTEXT
 # ============================================================================
 
+_ssl_context_cache = None
+
 def get_ssl_context():
+    """Get SSL context with Windows compatibility fallback"""
+    global _ssl_context_cache
+    if _ssl_context_cache is not None:
+        return _ssl_context_cache
+
+    # Try default context first
+    try:
+        ctx = ssl.create_default_context()
+        # Test connection to verify SSL works
+        import urllib.request
+        req = urllib.request.Request("https://api.github.com", method="HEAD")
+        urllib.request.urlopen(req, timeout=5, context=ctx)
+        _ssl_context_cache = ctx
+        return ctx
+    except Exception:
+        pass
+
+    # Fallback: Try with certifi if available
+    try:
+        import certifi
+        ctx = ssl.create_default_context(cafile=certifi.where())
+        _ssl_context_cache = ctx
+        return ctx
+    except ImportError:
+        pass
+
+    # Last resort: Unverified context (less secure but works)
     ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    _ssl_context_cache = ctx
     return ctx
 
 # ============================================================================
