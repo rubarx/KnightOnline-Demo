@@ -187,6 +187,9 @@ class Launcher:
         self.update_available = False
         self.patches_available = []
         self.local_patch_id = 0
+        self.full_update_pending = False
+        self.pending_local_version = None
+        self.pending_remote_version = None
 
         # Center window
         self.root.update_idletasks()
@@ -438,7 +441,7 @@ Extended Hotkeys (1-0) - 10 skill slots"""
             self.check_client_update(release)
 
     def check_client_update(self, release):
-        """Check if client needs update"""
+        """Check if client needs update - but prefer patches over full download"""
         remote_version = release.get("version", "0.0.0")
         local_version = "0.0.0"
 
@@ -452,10 +455,11 @@ Extended Hotkeys (1-0) - 10 skill slots"""
 
         try:
             if version_tuple(remote_version) > version_tuple(local_version):
-                self.update_available = True
-                self.update_label.config(text=f"Update available: v{local_version} -> v{remote_version}")
-                self.version_status.config(text=f"v{local_version} (update available)", fg=C.ORANGE)
-                self.update_frame.pack(fill="x", pady=(0, 12))
+                # Don't show full update immediately - let patches be checked first
+                # Full update will only be shown if no patches are available
+                self.full_update_pending = True
+                self.pending_local_version = local_version
+                self.pending_remote_version = remote_version
         except:
             pass
 
@@ -478,11 +482,24 @@ Extended Hotkeys (1-0) - 10 skill slots"""
             patches = PatchAPI.get_pending_patches(self.local_patch_id)
             if patches:
                 self.root.after(0, lambda: self.process_patches(patches))
+            else:
+                # No patches available - show full update if pending
+                self.root.after(0, self.show_full_update_if_needed)
 
         threading.Thread(target=fetch, daemon=True).start()
 
+    def show_full_update_if_needed(self):
+        """Show full update button only if no patches are available"""
+        if self.full_update_pending and not self.patches_available:
+            self.update_available = True
+            local_v = self.pending_local_version or "0.0.0"
+            remote_v = self.pending_remote_version or "?.?.?"
+            self.update_label.config(text=f"Update available: v{local_v} -> v{remote_v}")
+            self.version_status.config(text=f"v{local_v} (update available)", fg=C.ORANGE)
+            self.update_frame.pack(fill="x", pady=(0, 12))
+
     def process_patches(self, patches):
-        """Process available patches"""
+        """Process available patches - ALWAYS prefer patches over full download"""
         self.patches_available = patches
 
         # Count total files
@@ -491,13 +508,14 @@ Extended Hotkeys (1-0) - 10 skill slots"""
         size_kb = total_size / 1024
 
         if total_files > 0:
-            # Show patch update instead of full update if no full update
-            if not self.update_available:
-                desc = patches[-1].get("description", "New content")
-                self.update_label.config(text=f"Patch: {desc} ({total_files} files, {size_kb:.0f}KB)")
-                self.update_btn.config(command=self.apply_patches)
-                self.update_frame.pack(fill="x", pady=(0, 12))
-                self.version_status.config(text=f"Patch available", fg=C.ORANGE)
+            # Always show patches - they are smaller and faster than full update
+            desc = patches[-1].get("description", "New content")
+            self.update_label.config(text=f"Patch: {desc} ({total_files} files, {size_kb:.0f}KB)")
+            self.update_btn.config(command=self.apply_patches)
+            self.update_frame.pack(fill="x", pady=(0, 12))
+            self.version_status.config(text=f"Patch available", fg=C.ORANGE)
+            # Cancel any pending full update since patches are available
+            self.full_update_pending = False
 
     def apply_patches(self):
         """Download and apply incremental patches"""
