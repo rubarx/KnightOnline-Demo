@@ -58,6 +58,7 @@ public:
 	void RecvUserFail(char* pBuf);
 	void Send_UserError(int16_t uid, int16_t tid = 10000);
 	void RecvBattleEvent(char* pBuf);
+	void RecvNpcSummon(char* pBuf);
 };
 
 } // namespace AIServer

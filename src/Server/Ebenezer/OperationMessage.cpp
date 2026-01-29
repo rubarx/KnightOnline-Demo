@@ -32,7 +32,6 @@ bool OperationMessage::Process(const std::string_view command)
 	{
 		switch (key)
 		{
-#if 0 // TODO
 			case "+pursue"_djb2:
 				Pursue();
 				break;
@@ -72,14 +71,12 @@ bool OperationMessage::Process(const std::string_view command)
 			case "+monkill"_djb2:
 				MonKill();
 				break;
-#endif
 
 			case "/open"_djb2:
 			case "+open"_djb2:
 				Open();
 				break;
 
-#if 0 // TODO
 			case "/open2"_djb2:
 			case "+open2"_djb2:
 				Open2();
@@ -102,7 +99,6 @@ bool OperationMessage::Process(const std::string_view command)
 			case "+forbidconnect"_djb2:
 				ForbidConnect();
 				break;
-#endif
 
 			case "/snowopen"_djb2:
 			case "+snowopen"_djb2:
@@ -119,7 +115,6 @@ bool OperationMessage::Process(const std::string_view command)
 				Captain();
 				break;
 
-#if 0 // TODO
 			case "/tiebreak"_djb2:
 			case "+tiebreak"_djb2:
 				TieBreak();
@@ -134,7 +129,6 @@ bool OperationMessage::Process(const std::string_view command)
 			case "+auto_off"_djb2:
 				AutoOff();
 				break;
-#endif
 
 			case "/down"_djb2:
 			case "+down"_djb2:
@@ -146,12 +140,10 @@ bool OperationMessage::Process(const std::string_view command)
 				Discount();
 				break;
 
-#if 0 // TODO
 			case "/freediscount"_djb2:
 			case "+freediscount"_djb2:
 				FreeDiscount();
 				break;
-#endif
 
 			case "/alldiscount"_djb2:
 			case "+alldiscount"_djb2:
@@ -178,7 +170,6 @@ bool OperationMessage::Process(const std::string_view command)
 				OffSanta();
 				break;
 
-#if 0 // TODO
 			case "/limitbattle"_djb2:
 			case "+limitbattle"_djb2:
 				LimitBattle();
@@ -193,7 +184,6 @@ bool OperationMessage::Process(const std::string_view command)
 			case "+offsummonblock"_djb2:
 				OffSummonBlock();
 				break;
-#endif
 
 			// +zonechange: {int: zoneId} [float: x] [float: z]
 			// NOTE: Coordinates are unofficial.
@@ -201,7 +191,6 @@ bool OperationMessage::Process(const std::string_view command)
 				ZoneChange();
 				break;
 
-#if 0 // TODO
 			case "+siegewarfare"_djb2:
 				SiegeWarfare();
 				break;
@@ -349,13 +338,11 @@ bool OperationMessage::Process(const std::string_view command)
 			case "+reload_king"_djb2:
 				ReloadKing();
 				break;
-#endif
 
 			case "/kill"_djb2:
 				Kill();
 				break;
 
-#if 0
 			case "/reload_notice"_djb2:
 				ReloadNotice();
 				break;
@@ -391,7 +378,6 @@ bool OperationMessage::Process(const std::string_view command)
 			case "/challengestop"_djb2:
 				ChallengeStop();
 				break;
-#endif
 
 			case "/permanent"_djb2:
 				Permanent();
@@ -466,9 +452,67 @@ void OperationMessage::Assault()
 	// TODO
 }
 
+// +monsummon {npcId} [count=1] [x=current] [z=current]
+// Summons an NPC/monster at the specified location
 void OperationMessage::MonSummon()
 {
-	// TODO
+	// Requires a user context
+	if (_srcUser == nullptr)
+		return;
+
+	// Check if user is GM
+	if (_srcUser->m_pUserData->m_bAuthority < 1)
+	{
+		spdlog::warn("MonSummon: User {} tried to summon monster without GM authority",
+			_srcUser->m_pUserData->m_id);
+		return;
+	}
+
+	// Need at least the NPC ID
+	if (GetArgCount() < 1)
+	{
+		spdlog::warn("MonSummon: Usage: +monsummon <npcId> [count=1] [x=current] [z=current]");
+		return;
+	}
+
+	// Parse arguments
+	int npcId = ParseInt(0);
+	int count = 1;
+	float x = _srcUser->m_pUserData->m_curx;
+	float z = _srcUser->m_pUserData->m_curz;
+
+	if (GetArgCount() >= 2)
+		count = ParseInt(1);
+	if (GetArgCount() >= 3)
+		x = ParseFloat(2);
+	if (GetArgCount() >= 4)
+		z = ParseFloat(3);
+
+	// Validate count (safety limit)
+	if (count < 1)
+		count = 1;
+	if (count > 100)
+		count = 100;
+
+	// Get the zone
+	uint8_t zoneId = _srcUser->m_pUserData->m_bZone;
+
+	spdlog::info("MonSummon: GM {} summoning {} x NPC {} at ({:.1f}, {:.1f}) in zone {}",
+		_srcUser->m_pUserData->m_id, count, npcId, x, z, zoneId);
+
+	// Build packet for AIServer
+	char sendBuffer[256] = {};
+	int sendIndex = 0;
+
+	SetByte(sendBuffer, AG_NPC_SUMMON, sendIndex);
+	SetShort(sendBuffer, static_cast<int16_t>(npcId), sendIndex);
+	SetShort(sendBuffer, static_cast<int16_t>(count), sendIndex);
+	SetFloat(sendBuffer, x, sendIndex);
+	SetFloat(sendBuffer, z, sendIndex);
+	SetShort(sendBuffer, _srcUser->_socketId, sendIndex); // GM who summoned
+
+	// Send to AIServer for this zone
+	_main->Send_AIServer(zoneId, sendBuffer, sendIndex);
 }
 
 void OperationMessage::MonSummonAll()

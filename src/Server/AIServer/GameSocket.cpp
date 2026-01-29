@@ -6,6 +6,7 @@
 #include "GameSocket.h"
 #include "Extern.h"
 #include "Map.h"
+#include "Npc.h"
 #include "NpcThread.h"
 #include "Party.h"
 #include "Region.h"
@@ -229,6 +230,10 @@ void CGameSocket::Parsing(int /*length*/, char* pData)
 
 		case AG_NPC_GATE_OPEN:
 			RecvGateOpen(pData + index);
+			break;
+
+		case AG_NPC_SUMMON:
+			RecvNpcSummon(pData + index);
 			break;
 
 		default:
@@ -1203,6 +1208,111 @@ void CGameSocket::RecvBattleEvent(char* pBuf)
 				pNpc->ChangeAbility(BATTLEZONE_CLOSE);
 		}
 	}
+}
+
+// Handles GM monster summon command from Ebenezer
+void CGameSocket::RecvNpcSummon(char* pBuf)
+{
+	int index = 0;
+
+	// Parse packet data
+	int16_t npcId = GetShort(pBuf, index);
+	int16_t count = GetShort(pBuf, index);
+	float x       = GetFloat(pBuf, index);
+	float z       = GetFloat(pBuf, index);
+	int16_t gmId  = GetShort(pBuf, index);
+
+	spdlog::info("GameSocket::RecvNpcSummon: GM {} summoning {} x NPC {} at ({:.1f}, {:.1f}) in zone {}",
+		gmId, count, npcId, x, z, _zoneNo);
+
+	// Validate count
+	if (count < 1)
+		count = 1;
+	if (count > 100)
+		count = 100;
+
+	// Get the NPC table data
+	model::Npc* pNpcTable = m_pMain->_npcTableMap.GetData(npcId);
+	if (pNpcTable == nullptr)
+	{
+		spdlog::error("GameSocket::RecvNpcSummon: NPC ID {} not found in database", npcId);
+		return;
+	}
+
+	// Get the map for this zone
+	MAP* pMap = m_pMain->GetZone(_zoneNo);
+	if (pMap == nullptr)
+	{
+		spdlog::error("GameSocket::RecvNpcSummon: Zone {} not found", _zoneNo);
+		return;
+	}
+
+	// Summon the monsters
+	for (int i = 0; i < count; i++)
+	{
+		// Add random offset to avoid stacking
+		float spawnX = x + (rand() % 10 - 5);
+		float spawnZ = z + (rand() % 10 - 5);
+
+		// Create new NPC
+		CNpc* pNpc = new CNpc();
+
+		// Assign a unique NPC ID (use high range to avoid conflicts)
+		static int16_t sSummonSerial = 30000;
+		pNpc->m_sNid           = sSummonSerial++;
+		if (sSummonSerial > 32000)
+			sSummonSerial = 30000;
+
+		pNpc->m_sSid           = npcId;                                  // Monster type ID
+		pNpc->m_sPid           = pNpcTable->m_sPid;                       // Model ID
+		pNpc->m_byMoveType     = 2;                                       // Attack type
+		pNpc->m_byInitMoveType = 2;
+		pNpc->m_byGroup        = 0;                                       // Neutral
+		pNpc->m_sCurZone       = _zoneNo;
+		pNpc->m_ZoneIndex      = pMap->m_sZoneIndex;
+		pNpc->m_strName        = pNpcTable->m_strName;
+		pNpc->m_byLevel        = pNpcTable->m_byLevel;
+		pNpc->m_iMaxHP         = pNpcTable->m_iHpPoint;
+		pNpc->m_iHP            = pNpc->m_iMaxHP;
+		pNpc->m_byMaxDamage    = static_cast<uint8_t>(pNpcTable->m_sDamage);
+		pNpc->m_byMinDamage    = static_cast<uint8_t>(pNpcTable->m_sDamage / 2);
+		pNpc->m_sAttackDelay   = pNpcTable->m_sAttackDelay;
+		pNpc->m_sHitRate       = pNpcTable->m_sHitRate;
+		pNpc->m_bySearchRange  = pNpcTable->m_bySearchRange;
+		pNpc->m_byAttackRange  = pNpcTable->m_byAttackRange;
+		pNpc->m_sAC            = pNpcTable->m_sAC;
+		pNpc->m_sSize          = pNpcTable->m_sSize;
+		pNpc->m_iWeapon_1      = pNpcTable->m_iWeapon1;
+		pNpc->m_iWeapon_2      = pNpcTable->m_iWeapon2;
+		pNpc->m_tNpcType       = pNpcTable->m_byType;
+
+		// Set position
+		pNpc->m_fCurX = spawnX;
+		pNpc->m_fCurZ = spawnZ;
+		pNpc->m_fCurY = pMap->GetHeight(spawnX, spawnZ);
+
+		// Initialize NPC
+		pNpc->Init();
+		pNpc->m_NpcState = NPC_STANDING;
+		pNpc->m_bFirstLive = false;
+
+		// Add to NPC map
+		m_pMain->_npcMap[pNpc->m_sNid] = pNpc;
+
+		// Send NPC info to all clients
+		char sendBuffer[1024] = {};
+		int sendIndex = 0;
+		SetByte(sendBuffer, AG_NPC_INOUT, sendIndex);
+		SetByte(sendBuffer, NPC_IN, sendIndex);
+		SetShort(sendBuffer, 1, sendIndex); // count = 1
+		pNpc->SendNpcInfoAll(sendBuffer, sendIndex, 1);
+		m_pMain->Send_All(sendBuffer, sendIndex);
+
+		spdlog::debug("GameSocket::RecvNpcSummon: Spawned {} (nid={}) at ({:.1f}, {:.1f}, {:.1f})",
+			pNpc->m_strName, pNpc->m_sNid + NPC_BAND, spawnX, pNpc->m_fCurY, spawnZ);
+	}
+
+	spdlog::info("GameSocket::RecvNpcSummon: Successfully spawned {} monsters", count);
 }
 
 } // namespace AIServer
