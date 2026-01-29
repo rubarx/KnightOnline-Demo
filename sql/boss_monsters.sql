@@ -52,34 +52,107 @@ VALUES (9007, 'Crimson Harpy Queen', 2200, 100, 0, 0, 0, 2, 0, 0, 3, 0, 0, 77, 2
 -- SECTION 2: Insert Loot Tables into K_MONSTER_ITEM
 -- =============================================================================
 -- sPersent values: 10000 = 100%, 1000 = 10%, 500 = 5%, 100 = 1%
+--
+-- BALANCE DESIGN based on Boss Rank (byRank):
+-- - Rank 5 (Main Boss): 1-3% weapons, 5% armor, 10% scrolls
+-- - Rank 4 (Major Boss): 2-5% weapons, 8% armor, 15% scrolls
+-- - Rank 3 (Minor Boss): 3-8% weapons, 10% armor, 20% scrolls
+--
+-- REAL ITEM IDS from Item_Org_us.tbl.csv:
+-- Weapons: 126410000 (Mirage 2H), 121210000 (Slayer 1H), 111210000 (Shard Dagger)
+-- Armor: 205001000-005 (Chitin), 206001000-005 (Chitin Shell)
+-- Scrolls: 379016000 (Upgrade), 379021000 (Blessed Upgrade)
 
--- Attila the Destroyer drops (best loot)
-INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9001, 389015000, 500, 389016000, 500, 810200000, 1000, 810201000, 1000, 399210000, 2000);
+-- Delete existing entries if any
+DELETE FROM K_MONSTER_ITEM WHERE sIndex BETWEEN 9001 AND 9007;
+GO
 
--- Manticore Lord drops
+-- =============================================================================
+-- ATTILA THE DESTROYER (Rank 5 - Main Boss - Lv83 - Lowest drop rates)
+-- Drops: Best weapons (Mirage 2H, Slayer), Chitin Shell armor, Blessed scrolls
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9002, 389014000, 800, 810199000, 1500, 399209000, 2500, 900001000, 5000, 0, 0);
+VALUES (9001,
+    126410000, 100,     -- Mirage (2H Sword Lv64) - 1% drop (very rare)
+    206001000, 300,     -- Chitin Shell Pauldron - 3% drop
+    379021000, 500,     -- Blessed Upgrade Scroll - 5% drop
+    121210000, 200,     -- Slayer (1H Sword Lv66) - 2% drop
+    205003000, 800      -- Chitin Armor Helmet - 8% drop
+);
 
--- Centaur Warlord drops
+-- =============================================================================
+-- MANTICORE LORD (Rank 4 - Major Boss - Lv80)
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9003, 389013000, 1000, 810198000, 2000, 399208000, 3000, 900001000, 5000, 0, 0);
+VALUES (9002,
+    111210000, 200,     -- Shard (Dagger Lv66) - 2% drop
+    205001000, 500,     -- Chitin Armor Pauldron - 5% drop
+    379016000, 800,     -- Upgrade Scroll - 8% drop
+    131110000, 300,     -- Deep Scar (Axe Lv61) - 3% drop
+    205002000, 600      -- Chitin Armor Pads - 6% drop
+);
 
--- Golem King drops
+-- =============================================================================
+-- CENTAUR WARLORD (Rank 4 - Major Boss - Lv78)
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9004, 389014500, 700, 810199500, 1200, 399209500, 2000, 900001000, 5000, 0, 0);
+VALUES (9003,
+    121210000, 300,     -- Slayer (1H Sword Lv66) - 3% drop
+    245001000, 600,     -- Rogue Chitin Pauldron - 6% drop
+    379016000, 1000,    -- Upgrade Scroll - 10% drop
+    141110000, 400,     -- Impact (Mace Lv63) - 4% drop
+    245002000, 700      -- Rogue Chitin Pads - 7% drop
+);
 
--- Troll King drops
+-- =============================================================================
+-- GOLEM KING (Rank 4 - Major Boss - Lv82)
+-- Drops more warrior-focused gear
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9005, 389012000, 1200, 810197000, 2500, 399207000, 3500, 900001000, 5000, 0, 0);
+VALUES (9004,
+    136210000, 250,     -- Blade Axe (2H Axe Lv61) - 2.5% drop
+    206002000, 400,     -- Chitin Shell Pads - 4% drop
+    379021000, 600,     -- Blessed Upgrade Scroll - 6% drop
+    126410000, 150,     -- Mirage (2H Sword) - 1.5% drop
+    206003000, 500      -- Chitin Shell Helmet - 5% drop
+);
 
--- Shadow Apostle drops
+-- =============================================================================
+-- TROLL KING (Rank 4 - Major Boss - Lv79)
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9006, 389013500, 900, 810198500, 1800, 399208500, 2800, 900001000, 5000, 0, 0);
+VALUES (9005,
+    131110000, 400,     -- Deep Scar (Axe Lv61) - 4% drop
+    205004000, 700,     -- Chitin Armor Gauntlet - 7% drop
+    379016000, 1200,    -- Upgrade Scroll - 12% drop
+    141110000, 350,     -- Impact (Mace Lv63) - 3.5% drop
+    205005000, 700      -- Chitin Armor Boots - 7% drop
+);
 
--- Crimson Harpy Queen drops
+-- =============================================================================
+-- SHADOW APOSTLE (Rank 4 - Major Boss - Lv81)
+-- Drops mixed gear (rogue + caster friendly)
+-- =============================================================================
 INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
-VALUES (9007, 389011000, 1500, 810196000, 3000, 399206000, 4000, 900001000, 5000, 0, 0);
+VALUES (9006,
+    111210000, 350,     -- Shard (Dagger Lv66) - 3.5% drop
+    245003000, 650,     -- Rogue Chitin Helmet - 6.5% drop
+    379021000, 700,     -- Blessed Upgrade Scroll - 7% drop
+    121210000, 250,     -- Slayer (1H Sword) - 2.5% drop
+    245004000, 550      -- Rogue Chitin Gauntlet - 5.5% drop
+);
+
+-- =============================================================================
+-- CRIMSON HARPY QUEEN (Rank 3 - Minor Boss - Lv77 - Higher drop rates)
+-- =============================================================================
+INSERT INTO K_MONSTER_ITEM (sIndex, iItem01, sPersent01, iItem02, sPersent02, iItem03, sPersent03, iItem04, sPersent04, iItem05, sPersent05)
+VALUES (9007,
+    111210000, 500,     -- Shard (Dagger Lv66) - 5% drop
+    245005000, 1000,    -- Rogue Chitin Boots - 10% drop
+    379016000, 1500,    -- Upgrade Scroll - 15% drop
+    131110000, 600,     -- Deep Scar (Axe) - 6% drop
+    245001000, 800      -- Rogue Chitin Pauldron - 8% drop
+);
 
 -- =============================================================================
 -- SECTION 3: Insert Spawn Positions into K_NPCPOS
