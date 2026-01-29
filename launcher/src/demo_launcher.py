@@ -673,10 +673,12 @@ Extended Hotkeys (1-0) - 10 skill slots"""
                 zip_path.unlink()
 
                 # Update local version
+                # patch_id: 0 means fresh install, patches will be checked and applied
                 new_version = {
                     "version": release.get("version", "1.0.0"),
                     "tag": release.get("tag", "v1.0.0"),
-                    "updated_at": datetime.now().isoformat()
+                    "updated_at": datetime.now().isoformat(),
+                    "patch_id": 0
                 }
                 self.save_local_version(new_version)
                 self.local_version = new_version
