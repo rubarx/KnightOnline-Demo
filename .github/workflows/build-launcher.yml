@@ -2,7 +2,7 @@ name: "AI Knight Online - Build Launcher"
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, demo]
     paths:
       - 'launcher/**'
       - '.github/workflows/build-launcher.yml'
@@ -29,11 +29,11 @@ jobs:
       shell: pwsh
       run: |
         cd launcher
-        pyinstaller --onefile --windowed --name AI_Knight_Online_Launcher --noupx --noconsole --clean --noconfirm src/launcher.py
+        pyinstaller --onefile --windowed --name KO-Demo-Launcher --noupx --noconsole --clean --noconfirm src/demo_launcher.py
 
     - name: Upload Launcher Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AI-Knight-Online-Launcher
-        path: launcher/dist/AI_Knight_Online_Launcher.exe
+        name: KO-Demo-Launcher
+        path: launcher/dist/KO-Demo-Launcher.exe
         retention-days: 90
