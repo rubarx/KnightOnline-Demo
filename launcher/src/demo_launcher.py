@@ -35,7 +35,7 @@ CONFIG = {
     "version": "1.0.1",
     "github_repo": "rubarx/KnightOnline-Demo",
     "github_api": "https://api.github.com/repos/rubarx/KnightOnline-Demo/releases/latest",
-    "patches_api": "https://ko.ai-nexus.net/downloads/patches.json",
+    "patches_api": "https://ko.ai-nexus.net/api/patches",
     "game_exe": "KnightOnLine.exe",
     "server_ip": "game.ai-nexus.net",
     "server_port": 15100,
